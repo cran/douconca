@@ -1,3 +1,7 @@
+# douconca 1.2.1
+
+* Patch release addressing check errors on several CRAN build machines.
+
 # douconca 1.2.0
 
 * Intial CRAN release

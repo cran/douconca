@@ -50,7 +50,7 @@ A list with three components
 \describe{
 \item{CWM_SNC}{a data.frame containing plot data}
 \item{trait_env_scores}{a vector of scores per trait/environment}
-\item{newNamesList}{a vector of new names to be used in the plot}
+\item{newNameList}{a vector of new names to be used in the plot}
 }
 }
 \description{

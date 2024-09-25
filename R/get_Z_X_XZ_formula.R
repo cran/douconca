@@ -32,7 +32,7 @@ get_Z_X_XZ_formula <- function(formula,
   # get formulas and focal and conditioning_factors from a formula
   # with optional data to determine which variables are factors
   trms <- delete.response(terms(formula, specials = "Condition", 
-                                keep.order = TRUE))
+                                data = data, keep.order = TRUE))
   trmLabs <- rownames(attr(trms, "factors"))
   condId <- attr(trms, "specials")$Condition
   if (!length(condId)) {

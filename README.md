@@ -4,6 +4,13 @@
 # douconca
 
 <!-- badges: start -->
+
+[![](https://www.r-pkg.org/badges/version/douconca)](https://www.r-pkg.org/pkg/douconca)
+[![CRAN RStudio mirror
+downloads](https://cranlogs.r-pkg.org/badges/douconca)](https://www.r-pkg.org/pkg/douconca)
+[![R-CMD-check](https://github.com/Biometris/douconca/workflows/R-CMD-check/badge.svg)](https://github.com/Biometris/douconca/actions?workflow=R-CMD-check)
+[![codecov](https://codecov.io/gh/Biometris/douconca/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Biometris/douconca)
+
 <!-- badges: end -->
 
 R library `douconca` analyzes multi-trait multi-environment ecological

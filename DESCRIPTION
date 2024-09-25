@@ -2,8 +2,8 @@ Package: douconca
 Type: Package
 Title: Double Constrained Correspondence Analysis for Trait-Environment
         Analysis in Ecology
-Version: 1.2.0
-Date: 2024-08-29
+Version: 1.2.1
+Date: 2024-09-17
 Authors@R: c(person(given = "Cajo J.F", 
                     family = "ter Braak", 
                     email = "cajo.terbraak@wur.nl",
@@ -42,12 +42,12 @@ RoxygenNote: 7.3.2
 NeedsCompilation: no
 Suggests: rmarkdown, knitr, tinytest
 VignetteBuilder: knitr
-URL: https://github.com/CajoterBraak/douconca
-BugReports: https://github.com/CajoterBraak/douconca/issues
-Packaged: 2024-09-11 07:27:07 UTC; rossu027
+URL: https://github.com/Biometris/douconca
+BugReports: https://github.com/Biometris/douconca/issues
+Packaged: 2024-09-25 10:43:10 UTC; rossu027
 Author: Cajo J.F ter Braak [aut] (<https://orcid.org/0000-0002-0414-8745>),
   Bart-Jan van Rossum [aut, cre]
     (<https://orcid.org/0000-0002-8673-2514>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2024-09-13 18:20:13 UTC
+Date/Publication: 2024-09-25 12:40:14 UTC

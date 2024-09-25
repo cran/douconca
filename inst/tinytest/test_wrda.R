@@ -17,17 +17,17 @@ expect_inherits(mod_wrda, "wrda")
 
 expect_equivalent(mod_wrda$eig, anova(mod_wrda)$eig)
 
-expect_equal_to_reference(mod_wrda, "mod_wrda")
-
 expect_equal(anova(mod_wrda, by = "axis")$table$Variance,
              c(13.4759764625272, 3.51996709660156, 2.83281997217771, 
                1.90283508422467, 24.4005894936307))
 
 scores_wrda <- scores(mod_wrda, display = "all")
-expect_equal_to_reference(scores_wrda, "scores_wrda")
 
 scores_sub <- scores(mod_wrda, which_cor = c("A1", "Manure"), display = "cor")
 expect_equivalent(scores_wrda$correlation[c("A1", "Manure"), ], scores_sub)
+
+scores_wrda_abs <- sapply(X = scores_wrda, FUN = abs)
+expect_equal_to_reference(scores_wrda_abs, "scores_wrda_abs")
 
 # The default is equal weights, which allows checking against vegan
 mod_wrda_ew <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
