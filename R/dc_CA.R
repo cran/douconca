@@ -65,10 +65,11 @@
 #' statistics of the method. This is useful, when the abundance data are not 
 #' available or could not be made public in a paper attempting reproducible 
 #' research. In this case, \code{response} should be a list
-#' with as first element community weighted means (CWMs) with respect to the 
-#' traits, and the trait data, and, optionally, further elements, for functions
+#' with as first element community weighted means 
+#' (e.g. \code{list(CWM = CWMs)}) with respect to the 
+#' traits, and the trait data, and, optionally, further list elements, for functions
 #' related to \code{dc_CA}. The minimum is a 
-#' \code{list(CWM, weight = list(columns = species_weights))} with CWM a matrix
+#' \code{list(CWM = CWMs, weight = list(columns = species_weights))} with CWM a matrix
 #' or data.frame, but then \code{formulaEnv}, \code{formulaTraits}, 
 #' \code{dataEnv}, \code{dataTraits} must be specified in the call to 
 #' \code{dc_CA}. The function \code{\link{fCWM_SNC}} and its example
@@ -82,7 +83,7 @@
 #' The statistics and scores in the example \code{dune_dcCA.r}, have been 
 #' checked against the results in Canoco 5.15 (ter Braak & Šmilauer, 2018).
 #'
-#' @return
+#' @returns
 #' A list of \code{class} \code{dcca}; that is a list with elements
 #' \describe{
 #' \item{CCAonTraits}{a \code{\link[vegan]{cca.object}} from the 
@@ -94,8 +95,8 @@
 #' after removing empty rows and columns in \code{response} and after closure if 
 #' \code{divideBySiteTotals = TRUE} and with the corresponding rows in 
 #' \code{dataEnv} and \code{dataTraits} removed.}
-#' \item{weights}{a list of unit-sum weights of row and columns. The names of 
-#' the list are \code{c("row", "columns")}, in that order.}
+#' \item{weights}{a list of unit-sum weights of columns and rows. The names of 
+#' the list are \code{c("columns", "rows")}, in that order.}
 #' \item{Nobs}{number of sites (rows).}
 #' \item{CWMs_orthonormal_traits}{Community weighted means w.r.t. 
 #' orthonormalized traits.}
@@ -112,18 +113,26 @@
 #' \item{c_traits_normed0}{mean, sd, VIF and (regression) coefficients of 
 #' the traits that define the dc-CA axes in terms of the 
 #' traits with t-ratios missing indicated by \code{NA}s for 'tval1'.}
-#' \item{inertia}{a one-column matrix with four inertias (weighted variances):
+#' \item{inertia}{a one-column matrix with, at most,
+#' six inertias (weighted variances):
 #' \itemize{
 #' \item total: the total inertia.
 #' \item conditionT: the inertia explained by the condition in 
 #' \code{formulaTraits} if present (neglecting row constraints).
-#' \item traits_explain: the inertia explained by the traits (neglecting the 
-#' row predictors and any condition in \code{formulaTraits}). This is the 
-#' maximum that the row predictors could explain in dc-CA (the sum of the 
-#' following two items is thus less than this value).
-#' \item conditionE: the trait-constrained inertia explained by the condition 
-#' in \code{formulaEnv}.
-#' \item constraintsTE: the trait-constrained inertia explained by the 
+#' \item traits_explain: the trait-structured variation, \emph{i.e.}
+#' the inertia explained by the traits (without constaints on the rows and 
+#' conditional on the Condition in \code{formulaTraits}).
+#' This is the  maximum that the row predictors could explain in dc-CA
+#' (the sum of the last two items is thus less than this value).
+#' \item env_explain: the environmentally structured variation, \emph{i.e.}
+#' the inertia explained by the environment (without constraints on the 
+#' columns but conditional on the Condition \code{formulaEnv}).
+#' This is the maximum that the column predictors could explain in 
+#' dc-CA (the item \code{constraintsTE} is thus less than this value).
+#' The value is \code{NA}, if there is collinearity in the environmental data.
+#' \item conditionTE: the trait-constrained variation explained by the 
+#' condition in \code{formulaEnv}.
+#' \item constraintsTE: the trait-constrained variation explained by the 
 #' predictors (without the row covariates).
 #' }
 #' }
@@ -225,100 +234,22 @@ dc_CA <- function(formulaEnv = NULL,
     }
   }
   if (is.null(dc_CA_object)) {
-    #  check and amend: make sure there are no empty rows or columns 
-    if (any(is.na(response))) {
-      stop("The response should not have missing entries.\n")
-    }
-    if (any(response < 0)) {
-      stop("The response should not have negative values.\n")
-    }
-    if (is.null(dataTraits)) {
-      stop("dataTraits must be specified in dc_CA.\n")
-    }
-    if (!is.matrix(response)) {
-      response <- as.matrix(response)
-    } 
-    id0 <- 1
-    while(length(id0)) {
-      TotR <- rowSums(response)
-      id0 <- which(TotR == 0)
-      if (length(id0)) {
-        response <- response[-id0, ]
-        dataEnv  <- dataEnv[-id0, ]
-      }
-      TotC <- colSums(response)
-      id0 <- which(TotC == 0)
-      if (length(id0)) {
-        response <- response[, -id0]
-        dataTraits <- dataTraits[-id0, ]
-      }
-    }
-    # delete columns with missing data
-    id <- rep(FALSE, ncol(dataEnv))
-    for (ii in seq_along(id)) {
-      id[ii] <- sum(is.na(dataEnv[, ii])) == 0
-      if (!id[[ii]]) { 
-        warning("variable", names(dataEnv)[ii], 
-                "has missing values and is deleted from the environmental data.\n")
-      }
-    }
-    dataEnv <- dataEnv[, id]
-    id <- rep(FALSE, ncol(dataTraits))
-    for (ii  in seq_along(id)) {
-      id[ii] <- sum(is.na(dataTraits[,ii])) == 0
-      if (!id[[ii]]) {
-        warning("variable", names(dataTraits)[ii], 
-                "has missing values and is deleted from trait data.\n")
-      }
-    }
-    dataTraits <- dataTraits[, id]
-    dataEnv <- as.data.frame(lapply(dataEnv, function(x) {
-      if (is.character(x)) x <- as.factor(x) else x
-      return(x) 
-    }))
-    dataTraits <- as.data.frame(lapply(dataTraits, function(x) {
-      if (is.character(x)) x<- as.factor(x) else x
-      return(x) 
-    }))
-    rownames(dataEnv) <- rownames(response)
-    rownames(dataTraits) <- colnames(response)
-    # end of check 
-    if (divideBySiteTotals) {
-      response <- response / (rowSums(response) %*% t(rep(1, ncol(response))))
-    }
-    TotR <- rowSums(response)
-    TotC <- colSums(response)
-    tY <- t(response)
-    if (is.null(formulaTraits)) {
-      formulaTraits <- 
-        as.formula(paste("~", paste0(names(dataTraits), collapse = "+")))
-      warning("formulaTraits set to ~. in dc_CA.\n")
-    }
-    if (is.null(formulaEnv)) {
-      formulaEnv <- 
-        as.formula(paste("~", paste0(names(dataEnv), collapse = "+")))
-      warning("formulaEnv set to ~. in dc_CA.\n")
-    }
-    formulaTraits <- change_reponse(formulaTraits, "tY", dataTraits)
+    out0 <- check_data_dc_CA(formulaEnv, formulaTraits, response, dataEnv, 
+                             dataTraits, divideBySiteTotals, call)
+    tY <- t(out0$data$Y)
+    formulaTraits <- change_reponse(out0$formulaTraits, "tY", out0$data$dataTraits)
     environment(formulaTraits) <- environment()
-    step1 <- vegan::cca(formulaTraits, data = dataTraits)
-    data <- list(Y = response, dataEnv = dataEnv, dataTraits = dataTraits)
-    n <- nrow(data$Y)
+    step1 <- vegan::cca(formulaTraits, data = out0$data$dataTraits)
+    n <- out0$Nobs
     CWMs_orthonormal_traits <- 
       scores(step1, display = "species", scaling = "species",
              choices = seq_len(rank_mod(step1))) * sqrt((n - 1) / n)
     if (rownames(CWMs_orthonormal_traits)[1] == "col1") {
-      rownames(CWMs_orthonormal_traits) <- paste0("Sam", seq_len((nrow(dataEnv))))
+      rownames(CWMs_orthonormal_traits) <- paste0("Sam", seq_len((n)))
     }
-    out1 <- list(CCAonTraits = step1,
-                 formulaTraits = formulaTraits,
-                 formulaEnv = formulaEnv,
-                 data = list(Y = response, dataEnv = dataEnv, dataTraits = dataTraits),
-                 call = call,
-                 weights = list(rows = TotR / sum(TotR), 
-                                columns = TotC / sum(TotC)),
-                 Nobs = n,
-                 CWMs_orthonormal_traits = CWMs_orthonormal_traits)
+    out1 <- c(list(CCAonTraits = step1), 
+              out0,
+              list (CWMs_orthonormal_traits = CWMs_orthonormal_traits))
   } else {
     dc_CA_object$call <- call
     if (!is.null(formulaEnv)) {
@@ -341,7 +272,7 @@ dc_CA <- function(formulaEnv = NULL,
   }
   formulaEnv <- change_reponse(out1$formulaEnv, "out1$CWMs_orthonormal_traits", 
                                data = out1$data$dataEnv)
-  environment(formulaEnv)<- environment()
+  environment(formulaEnv) <- environment()
   if (diff(range(out1$weights$rows)) < 1.0e-4 / out1$Nobs) {
     step2 <- vegan::rda(formulaEnv, data = out1$data$dataEnv)
     eigenvalues <- vegan::eigenvals(step2, model = "constrained")

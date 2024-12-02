@@ -3,7 +3,7 @@
 #' @param x a wrda object from \code{\link{wrda}}
 #' @param ...  Other arguments passed to the function (currently ignored).
 #' 
-#' @return No return value, results are printed to console.
+#' @returns No return value, results are printed to console.
 #' 
 #' @example demo/dune_wrda.r
 #'

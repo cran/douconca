@@ -41,7 +41,7 @@
 #' 
 #' The function is used in \code{\link{plot.dcca}}.
 #'
-#' @return a ggplot object
+#' @returns a ggplot object
 #' 
 #' @example demo/dune_plot_gd.r
 #' 

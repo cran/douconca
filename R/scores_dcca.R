@@ -45,15 +45,10 @@
 #' @details
 #' The function is modeled after \code{\link[vegan]{scores.cca}}.
 #'
-#' If you get the error message: 'arg' should be one of "sites", "species", 
-#' "both", then the vegan scores function has been called, instead of the one 
-#' of douconca. The work-around is to use douconca::scores() instead of 
-#' scores() only.
-#'
 #' An example of which_cor is: \code{which_cor = list(traits = "SLA", 
 #' env = c("acidity", "humidity"))}
 #' 
-#' @return A data frame if \code{tidy = TRUE}, a matrix if a single item is 
+#' @returns A data frame if \code{tidy = TRUE}, a matrix if a single item is 
 #' asked for and a named list of matrices if more than one item is asked for. 
 #' The following names can be included: \code{c("sites", "constraints_sites",
 #' "centroids", "regression", "t_values", "correlation", 
@@ -122,6 +117,7 @@ scores_dcca <- function(x,
                         display = "all", 
                         scaling = "sym", 
                         which_cor = "in model", 
+                        normed = TRUE,
                         tidy = FALSE,
                         ...) {
   # internal function
@@ -229,6 +225,7 @@ scores_dcca <- function(x,
   }
   take <- tabula[display]
   if (inherits(x, "wrda", which = TRUE) == 1) {
+    methd <- "wRDA"
     if (any(take %in% tabula[1:8])) {
       site_axes <- f_env_axes(x)
     }
@@ -236,6 +233,7 @@ scores_dcca <- function(x,
     formulaEnv <- x$formula
     dataEnv <- x$data
   } else { # dcca
+    methd <- "dcCA"
     dataEnv <- x$data$dataEnv
     formulaEnv <- x$formulaEnv
     if (!"species_axes" %in% names(x)) {
@@ -299,15 +297,21 @@ scores_dcca <- function(x,
   if ("regression" %in% take) {
     regr <- 
       site_axes$c_env_normed[, choices + 3, drop = FALSE] %*% diag_scal_sites
+    if (!normed) { 
+      regr <- regr / site_axes$c_env_normed[, "SDS"]
+      standardized <- ""
+    } else {
+      standardized = "standardized"
+    }
     if (tidy) {
       sol$regression <- regr 
     } else {
       sol$regression <- cbind(site_axes$c_env_normed[, 1:3, drop = FALSE], regr)
     }
     attr(sol$regression, which = "meaning") <-
-      paste0("mean, sd, VIF, standardized regression coefficients.")
+      paste("mean, sd, VIF,", standardized, "regression coefficients.")
   }
-  if ("t_values" %in% take){
+  if ("t_values" %in% take) {
     sol$t_values <- 
       site_axes$c_env_normed[, rank_mod(x) + choices + 3, drop = FALSE]
     attr(sol$t_values, which = "meaning") <-
@@ -320,7 +324,7 @@ scores_dcca <- function(x,
     } else {
       whichc <- which_cor[[2]]
       if (whichc[1] == "in model") {
-        whichc <- get_Z_X_XZ_formula(formulaEnv)$focal_nams
+        whichc <- get_Z_X_XZ_formula(formulaEnv, dataEnv)$focal_nams
       }
       cor_Env_CWM <- f_env_axes(x, which_cor = whichc)
       sol$correlation <- cor_Env_CWM$correlation[, choices, drop = FALSE]
@@ -335,7 +339,7 @@ scores_dcca <- function(x,
     } else {
       whichc <- which_cor[[2]]
       if (whichc[1] == "in model") {
-        whichc <- get_Z_X_XZ_formula(formulaEnv)$focal_nams
+        whichc <- get_Z_X_XZ_formula(formulaEnv, dataEnv)$focal_nams
       }
       cor_Env_CWM <- f_env_axes(x, which_cor = whichc)
       e_rcor <- cor_Env_CWM$correlation[, choices, drop = FALSE]
@@ -350,10 +354,13 @@ scores_dcca <- function(x,
     colnames(sol$intra_set_correlation) <- paste0("dcCA", choices)
     attr(sol$intra_set_correlation,  which = "meaning") <-
       paste("intra set correlation, correlation between environmental", 
-            "variables and the dc-ca axis (constrained sites scores)")
+            "variables and each axis (constrained sites scores)")
   }
   if ("biplot" %in% take) {
     e_rcor <- site_axes$correlation[, choices, drop = FALSE]
+    if (!normed){
+      e_rcor <- e_rcor * site_axes$msd$sd[1, ]
+    }
     R <- sqrt(site_axes$R2_env[choices])
     if (length(R) == 1) {
       sR <- matrix(slam / R)
@@ -362,10 +369,19 @@ scores_dcca <- function(x,
     }
     sol$biplot <- e_rcor %*% sR %*% diag_scal_sites
     colnames(sol$biplot) <- paste0("dcCA", choices)
-    attr(sol$biplot, which = "meaning") <- 
-      f_meaning("biplot", scaling,
-                paste("biplot scores of environmental variables for display", 
-                      "with biplot-traits for fourth-corner correlations"))
+    attr(sol$biplot, which = "mean") <- site_axes$msd$mean[1, ]
+    if(!normed) { 
+      attr(sol$biplot, which = "meaning") <- 
+        f_meaning("biplot", scaling,
+                  paste("unstandardized biplot scores",
+                        "of environmental variables for display", 
+                        "with biplot-traits for fourth-corner covariance"))
+    } else {
+      attr(sol$biplot, which = "meaning") <- 
+        f_meaning("biplot", scaling,
+                  paste("biplot scores of environmental variables for display", 
+                        "with biplot-traits for fourth-corner correlations"))
+    }
   }
   if ("centroids" %in% take) {
     if (!is.list(which_cor)) {
@@ -373,7 +389,7 @@ scores_dcca <- function(x,
     } else {
       whichc <- which_cor[[2]]
       if (whichc[1] ==  "in model") {
-        whichc <- get_Z_X_XZ_formula(formulaEnv)$focal_nams
+        whichc <- get_Z_X_XZ_formula(formulaEnv, dataEnv)$focal_nams
       }
     }
     dat <- dataEnv[, whichc, drop = FALSE]
@@ -411,6 +427,12 @@ scores_dcca <- function(x,
     if ("regression_traits" %in% take) {
       regr <- 
         species_axes$c_traits_normed[, choices + 3, drop = FALSE] %*% diag_scal_species
+      if(!normed) {
+        regr <- regr / species_axes$c_traits_normed[, "SDS"]
+        standardized <- ""
+      } else {
+        standardized <- "standardized"
+      }
       if (tidy) {
         sol$regression_traits <- regr 
       } else {
@@ -418,14 +440,14 @@ scores_dcca <- function(x,
           cbind(species_axes$c_traits_normed[, 1:3, drop = FALSE], regr)  
       }
       attr(sol$regression_traits, which = "meaning") <-
-        paste0("mean, sd, VIF, standardized regression coefficients.")
+        paste("mean, sd, VIF,", standardized, "regression coefficients.")																										
     }
     if ("t_values_traits" %in% take) {
       sol$t_values_traits <- 
         species_axes$c_traits_normed[, rank_mod(x) + choices + 3, drop = FALSE]
       attr(sol$t_values_traits, which = "meaning") <-
         paste("t-values of the coefficients of the regression of the SNCs", 
-              "along a dc-CA axis on to the traits")
+              "along each axis on to the traits")
     }
     if ("correlation_traits" %in% take) {
       if (!is.list(which_cor)) {
@@ -434,7 +456,7 @@ scores_dcca <- function(x,
       } else {
         whichc <- which_cor[[1]]
         if (whichc[1] == "in model") {
-          whichc <- get_Z_X_XZ_formula(x$formulaTraits)$focal_nams
+          whichc <- get_Z_X_XZ_formula(x$formulaTraits, x$data$dataTraits)$focal_nams
         }
         corTraitSNC <- f_trait_axes(x, which_cor = whichc)
         sol$correlation_traits <- 
@@ -450,7 +472,7 @@ scores_dcca <- function(x,
       } else {
         whichc <- which_cor[[1]]
         if (whichc[1] == "in model") {
-          whichc <- get_Z_X_XZ_formula(x$formulaTraits)$focal_nams
+          whichc <- get_Z_X_XZ_formula(x$formulaTraits, x$data$dataTraits)$focal_nams
         }
         corTraitSNC <- f_trait_axes(x, which_cor = whichc)
         e_rcor <- corTraitSNC$correlation[, choices, drop = FALSE]
@@ -465,11 +487,14 @@ scores_dcca <- function(x,
       colnames(sol$intra_set_correlation_traits) <- 
         paste0("dcCA", choices)
       attr(sol$intra_set_correlation_traits, which = "meaning") <-
-        paste("intra set correlation, correlation between traits and the", 
-              "dc-ca axis (constrained species scores)")
+        paste("intra set correlation, correlation between traits and", 
+              "each axis (constrained species scores)")
     }
     if ("biplot_traits" %in% take) {
       t_rcor <- species_axes$correlation[, choices, drop = FALSE]
+      if (!normed){
+        t_rcor <- t_rcor * species_axes$msd$sd[1, ]
+      }
       R <- sqrt(species_axes$R2_traits[choices])
       if (length(R) == 1) {
         sR <- diag_scal_species / R 
@@ -478,18 +503,26 @@ scores_dcca <- function(x,
       }
       sol$biplot_traits <- t_rcor %*% sR
       colnames(sol$biplot_traits) <- paste0("dcCA", choices)
-      attr(sol$biplot_traits, which = "meaning") <-
-        f_meaning("biplot", scaling, 
-                  paste("biplot scores of traits for display with biplot", 
-                        "scores for fourth-corner correlation"))
+      attr(sol$biplot_traits, which = "mean" ) <- species_axes$msd$mean[1, ]
+      if (normed) {
+        attr(sol$biplot_traits, which = "meaning") <-
+          f_meaning("biplot", scaling, 
+                    paste("biplot scores of traits for display with biplot", 
+                          "scores for fourth-corner correlation")) 
+      } else {
+        attr(sol$biplot_traits, which = "meaning") <-
+          f_meaning("biplot", scaling, 
+                    paste("unstandardized biplot scores of traits for display with biplot", 
+                          "scores for fourth-corner covariance"))
+      }
     }
     if ("centroids_traits" %in%take) {
       if (!is.list(which_cor)) {
-        whichc <- get_Z_X_XZ_formula(x$formulaTraits)$focal_nams
+        whichc <- get_Z_X_XZ_formula(x$formulaTraits, x$data$dataTraits)$focal_nams
       } else {
         whichc <- which_cor[[1]]
         if (whichc[1] == "in model") {
-          whichc <- get_Z_X_XZ_formula(x$formulaTraits)$focal_nams
+          whichc <- get_Z_X_XZ_formula(x$formulaTraits, x$data$dataTraits)$focal_nams
         }
       }
       dat <- x$data$dataTraits[, whichc, drop = FALSE]
@@ -507,11 +540,10 @@ scores_dcca <- function(x,
   # end of types of scores
   for (nam in names(sol)){
     if(!is.null(sol[[nam]])) {
-      if (!nam %in% c("regression", "regression_traits", "correlation", 
-                      "correlation_traits")) {
-        colnames(sol[[nam]]) <- paste0("dcCA", choices) 
+      if (!nam %in% c("regression", "regression_traits")) {
+        colnames(sol[[nam]]) <- paste0(methd, choices) 
       } else if (nam %in% c("regression", "regression_traits")) {
-        colnames(sol[[nam]])[-c(1, 2, 3)] <- paste0("dcCA", choices)
+        colnames(sol[[nam]])[-c(1, 2, 3)] <- paste0(methd, choices)
       }
     }
   }
@@ -576,7 +608,7 @@ scores_dcca <- function(x,
     sol$score <- as.factor(group)
     sol$label <- label
     sol$weight <- w
-    names(sol)[seq_along(choices)] <- paste0("dcCA", choices)
+    names(sol)[seq_along(choices)] <- paste0(methd, choices)
     attr(sol, which = "scaling") <- scaling
     attr(sol, which = "meaning") <- meaning
   }

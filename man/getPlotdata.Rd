@@ -43,7 +43,7 @@ the environmental centroid names (from left to right).}
 
 \item{remove_centroids}{logical to remove any centroids from the plot data 
 (default \code{FALSE}). Can be a two-vector, \emph{e.g.} 
-\code{c(TRUE, FALSE)} to remove only the environmental centroids.}
+\code{c(TRUE, FALSE)} to remove only the trait centroids.}
 }
 \value{
 A list with three components
@@ -56,6 +56,12 @@ A list with three components
 \description{
 \code{getPlotdata} extracts data from a \code{\link{dc_CA}} object for 
 plotting the CWMs and SNCs of a single axis.
+}
+\details{
+The current implementation sets the \code{traitfactor} to
+\code{NA} if the trait model contains more than a single trait factor 
+and the \code{envfactor} to \code{NA} if the environmental model
+contains more than a single environmental factor.
 }
 \examples{
 data("dune_trait_env")

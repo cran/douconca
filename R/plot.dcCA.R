@@ -22,8 +22,10 @@
 #' names (from left to right for the environmental centroids). If 
 #' \code{facet = FALSE} and \code{with_lines = TRUE}, the line fits ignore 
 #' groups of species and of sites.
-#' @param with_lines logical. Default \code{TRUE} for straight lines through
-#' groups of points.
+#' @param with_lines integer values (0,1,2). Default \code{2} for straight lines 
+#' through groups of points, with confidence intervals around the lines. 
+#' \code{with_lines=1} drops the confidence intervals and
+#' \code{with_lines=0} suppresses the lines.									
 #' @param nspecies integer. Default \code{20} for including a vertical species 
 #' plot with at most \code{nspecies} that have the highest contribution.
 #' @param species_groups name of a variable in \code{dataTraits} of 
@@ -33,8 +35,19 @@
 #' @param widths relative widths of the CWM-SNC plot, the correlation/weight
 #' plot and the species plot. (see \code{\link[gridExtra]{grid.arrange}}). 
 #' Default \code{c(5, 1, 1)}.
+#' @param flip_axis flip the direction of the axis? (default FALSE).
+#' @param expand amount of extension of the line plot (default 0.2).
+#' @param formula formula to use by ggplot geom_smooth (default y~x).																																	 
 #' 
 #' @details
+#' The current implementation does not distinguish groups of points, if there
+#' are two or more factors specified in the model.
+#' If you want to label one trait factor, specify 
+#' \code{traitfactor="yourfactor"} and similarly
+#' specify \code{envfactor="yourfactor"} for your environmental factor.
+#' 
+#' No lines are plotted if a single factor defines a model. 
+#' 
 #' If you want to set new names, look at the names with all arguments default, 
 #' i.e. \code{myplot <- plot(x)}, and then consult 
 #' \code{myplot$nameList$newnames} for the order of the names of traits and
@@ -48,7 +61,7 @@
 #' enlarge the plotting area or use \code{verbose = FALSE} and assign the 
 #' result.
 #' 
-#' @return a ggplot object
+#' @returns a ggplot object
 #'
 #' @example demo/dune_plot_dcCA.R
 #' 
@@ -65,7 +78,10 @@ plot.dcca <- function(x,
                       newnames = NULL, 
                       facet = TRUE, 
                       remove_centroids = FALSE, 
-                      with_lines = TRUE, 
+                      with_lines = 2,
+                      flip_axis = FALSE,
+                      expand = 0.2,
+                      formula = y ~ x,
                       verbose = TRUE) {
   if (!inherits(x, "dcca")) {
     stop("x should be of class dcca.\n")
@@ -88,6 +104,10 @@ plot.dcca <- function(x,
   pd <- getPlotdata(x, axis = axis, envfactor = envfactor, 
                     traitfactor = traitfactor, facet = facet, 
                     newnames = newnames, remove_centroids = remove_centroids)
+  if (flip_axis) {
+    pd$trait_env_scores[, 1] <- -pd$trait_env_scores[, 1]
+    pd$CWM_SNC[, c(1, 4, 10)]<- -pd$CWM_SNC[, c(1, 4, 10)]
+  }
   CWM_SNC <- plot_dcCA_CWM_SNC(x, axis = axis, envfactor = envfactor, 
                                traitfactor = traitfactor, facet = facet,
                                remove_centroids = remove_centroids, 
@@ -191,7 +211,8 @@ plot.dcca <- function(x,
     speciesname = "label",
     scoresname = namaxis,
     selectname = "Fratio1",
-    verbose = FALSE) + 
+    verbose = FALSE,
+    expand = expand) + 
     ggplot2::ggtitle(trait_title)
   plot_env <- plot_species_scores_bk(
     species_scores = env_scores,
@@ -201,7 +222,8 @@ plot.dcca <- function(x,
     speciesname = "label",
     scoresname = namaxis,
     selectname = "Fratio1",
-    verbose = FALSE) + 
+    verbose = FALSE,
+    expand = expand) + 
     ggplot2::ggtitle(env_title)
   # species vertical plot
   plot_species <- fplot_species(pd, x, nspecies = nspecies, 

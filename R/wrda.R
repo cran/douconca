@@ -30,7 +30,7 @@
 #' Compared to  \code{\link[vegan]{rda}}, \code{wrda} does not have residual 
 #' axes, \emph{i.e.} no SVD or PCA of the residuals is performed.
 #'
-#' @return
+#' @returns
 #' All scores in the \code{dcca} object are in scaling \code{"sites"} (1): 
 #' the scaling with \emph{Focus on Case distances}.
 #'

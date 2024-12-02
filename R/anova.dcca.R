@@ -47,9 +47,9 @@
 #' a factor of 20 or so quicker than the native R-code used in 
 #' \code{\link{anova_sites}}.
 #' 
-#' @return
+#' @returns
 #' A list of 3 of structures as from \code{\link[vegan]{anova.cca}}. The 
-#' elements are \code{c("species", "sites", "max")}
+#' elements are \code{c("species", "sites", "maxP")}
 #'
 #' @references
 #' ter Braak, C.J.F. & te Beest, D.E. 2022. Testing environmental effects
@@ -132,15 +132,13 @@ anova.dcca <- function(object,
                          F.perm = attr(f_sites0$table, "F.perm"),
                          class = c("anova.cca", "anova", "data.frame"))
   }
-  if (!is.null(f_species)){
+  if (!is.null(f_species)) {
     if (all(f_sites$`Pr(>F)` > f_species$`Pr(>F)`, na.rm = TRUE)) {
       f_max <- f_sites
       attr(f_max, "heading") <- 
         paste0("Max test combining the community- and species- level tests \n", 
                object1,
-               "\nTaken from the community-level test:\n",
-               "Residualized response permutation using vegan::rda\n",
-               "which performs well in this equi-weight case.\n",
+               "\nTaken from the community-level test.\n",
                howHead(attr(f_sites, "control")))
     } else if (all(f_sites$`Pr(>F)` <= f_species$`Pr(>F)`, na.rm = TRUE)) {
       f_max <- f_species
@@ -151,14 +149,10 @@ anova.dcca <- function(object,
                "Residualized predictor permutation\n",
                howHead(attr(f_species, "control")))
     } else { 
-      id <- f_sites$`Pr(>F)` > f_species$`Pr(>F)`
-      id <- id[-length(id)]
-      f_max <- f_species
-      f_max$R2 <- NULL
-      f_max$F[id] <- f_sites$F[id]
-      a <- cbind(traitP = f_species$`Pr(>F)`, envP = f_sites$`Pr(>F)`)
-      a <- cbind(a, maxP = cummax(apply(a, 1, max)))
-      f_max <- cbind(f_max[, c("df", "ChiSquare", "F")], a)
+      f_max <- f_species[-nrow(f_species), ]
+      a <- cbind(traitP = f_species$`Pr(>F)`, envP = f_sites$`Pr(>F)`)[-nrow(f_species), ]
+      a <- cbind(a, maxP = cummax(apply(X = a, MARGIN = 1, FUN = max)))
+      f_max <- cbind(f_max[, c("df", "ChiSquare")], a)
       names(f_max)[ncol(f_max)] <- "Pr(>F)"
       head <- 
         paste0("Max test combining the community- and species- level tests \n", 
@@ -171,7 +165,7 @@ anova.dcca <- function(object,
   } else f_max <- NULL
   result <- list(species = f_species,
                  sites = f_sites,
-                 max = f_max)
+                 maxP = f_max)
   return(result)
 }
 

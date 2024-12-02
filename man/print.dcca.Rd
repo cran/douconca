@@ -32,8 +32,10 @@ mod <- dc_CA(formulaEnv = ~A1 + Moist + Mag + Use + Manure,
              formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
              response = dune_trait_env$comm[, -1],  # must delete "Sites"
              dataEnv = dune_trait_env$envir,
-             dataTraits = dune_trait_env$traits)
+             dataTraits = dune_trait_env$traits,
+			 verbose = FALSE)
 
+print(mod) # same output as with verbose = TRUE (the default of verbose).																		 
 anova(mod, by = "axis")
 # For more demo on testing, see demo dune_test.r
 
@@ -62,13 +64,15 @@ mod3 <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
               formulaTraits = ~ SLA + Height + LDMC + Lifespan + Condition(Seedmass),
               response = dune_trait_env$comm[, -1],  # must delete "Sites"
               dataEnv = dune_trait_env$envir,
-              dataTraits = dune_trait_env$traits, verbose = FALSE)
+              dataTraits = dune_trait_env$traits, 
+			  verbose = FALSE)
 
 cat("\nFor illustration: same model but using dc_CA_object = mod2 for speed, ", 
     "as the trait model and data did not change\n")
 mod3B <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
                dataEnv = dune_trait_env$envir,
-               dc_CA_object = mod2, verbose= FALSE)
+               dc_CA_object = mod2, 
+			   verbose= FALSE)
 cat("\ncheck on equality of mod3 (from data) and mod3B (from a dc_CA_object)\n",
     "the expected difference is in the component 'call'\n ")
 print(all.equal(mod3, mod3B)) #  only the component call differs

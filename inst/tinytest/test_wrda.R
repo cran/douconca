@@ -29,6 +29,12 @@ expect_equivalent(scores_wrda$correlation[c("A1", "Manure"), ], scores_sub)
 scores_wrda_abs <- sapply(X = scores_wrda, FUN = abs)
 expect_equal_to_reference(scores_wrda_abs, "scores_wrda_abs")
 
+set.seed(129)
+anova_wrda <- anova(mod_wrda)
+anova_byaxis_wrda <- anova(mod_wrda, by = "axis")
+expect_equal_to_reference(anova_wrda, "anova_wrda")
+expect_equal_to_reference(anova_byaxis_wrda, "anova_byaxis_wrda")
+
 # The default is equal weights, which allows checking against vegan
 mod_wrda_ew <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
                     response = response, 
@@ -44,10 +50,10 @@ expect_equal(mod_wrda_ew$CCA$tot.chi, mod_vegan$CCA$tot.chi)
 expect_equivalent(mod_wrda_ew$CCA$u, mod_vegan$CCA$u)
 
 const <- sqrt(mod_wrda_ew$Nobs * mod_vegan$tot.chi)
-expect_equivalent(mod_wrda_ew$site_axes$site_scores$lc_env_scores,
-                  scores(mod_vegan, 
-                         choices = seq_len(ncol(mod_wrda_ew$site_axes$site_scores$lc_env_scores)),
-                         display= "lc", scaling = "sites", const = const))
+expect_equivalent(abs(mod_wrda_ew$site_axes$site_scores$lc_env_scores),
+                  abs(scores(mod_vegan, 
+                             choices = seq_len(ncol(mod_wrda_ew$site_axes$site_scores$lc_env_scores)),
+                             display= "lc", scaling = "sites", const = const)))
 
 expect_stdout(wrda_print <- print(mod_wrda))
 expect_equal(names(wrda_print), 

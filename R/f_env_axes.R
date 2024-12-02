@@ -42,6 +42,10 @@ f_env_axes <- function(out,
   QR <- get_QR(out)
   res <- calculate_b_se_tval(QR, y = CWM, w = w, scale2 = 0, name = "CWM")
   c_env_normed <- res$coef_normed
+  # NB: if vegan::rda, then SDS is a factor sqrt(Nobs) too large
+  if (diff(range(w)) < 1.0e-4 / length(w)) {
+    c_env_normed[, 2] <- c_env_normed[, 2] / sqrt(length(w))
+  }
   attr(c_env_normed, which = "warning") <-
     "The t-values are optimistic, i.e. an underestimate of their true absolute value"
   # correlations of the dataEnv with the CWMs wrt the  axes
@@ -52,6 +56,7 @@ f_env_axes <- function(out,
     fX <- as.formula(paste("~", paste0(whichc, collapse = "+")))
   }
   env0 <- modelmatrixI(formula = fX, data = dataEnv, XZ = FALSE)
+  msd <- mean_sd_w(env0, w = w)
   Cor_Env_CWM <- wcor(env0, CWM, w = w)
   colnames(Cor_Env_CWM) <- paste0("CWM-ax", seq_len(ncol(Cor_Env_CWM)))
   attr(Cor_Env_CWM, which = "meaning") <- 
@@ -60,6 +65,7 @@ f_env_axes <- function(out,
                                   lc_env_scores = res$fitted), 
                c_env_normed = c_env_normed, 
                b_se = res$b_se, 
+               msd = msd,
                R2_env = res$R2, 
                correlation = Cor_Env_CWM)
   return(out2)

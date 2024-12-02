@@ -35,7 +35,7 @@ of an svd of permuted data sets.}
 }
 \value{
 A list of 3 of structures as from \code{\link[vegan]{anova.cca}}. The 
-elements are \code{c("species", "sites", "max")}
+elements are \code{c("species", "sites", "maxP")}
 }
 \description{
 \code{anova.dcca} performs the community- and species-level permutation tests
@@ -72,7 +72,7 @@ mod <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
              response = dune_trait_env$comm[, -1],  # must delete "Sites"
              dataEnv = dune_trait_env$envir,
              dataTraits = dune_trait_env$traits,
-             verbose = TRUE)
+             verbose = FALSE)
 anova(mod)
 
 a_species <- anova_species(mod)

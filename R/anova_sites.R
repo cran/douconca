@@ -31,7 +31,7 @@
 #' The algorithm is analogous to that of \code{\link{anova.wrda}}. The function
 #' is used in \code{\link{anova.dcca}}.
 #'
-#' @return
+#' @returns
 #' A list with two elements with names \code{table} and \code{eigenvalues}.
 #' The \code{table} is as from \code{\link[vegan]{anova.cca}} and 
 #' \code{eigenvalues} gives the dc-CA eigenvalues.
@@ -53,7 +53,8 @@
 #' @export
 anova_sites <- function(object, 
                         permutations = 999, 
-                        by = NULL){
+                        by = NULL) {
+  rpp <- TRUE
   if (is.null(object$CWMs_orthonormal_traits)) {
     warning("Site level anova requires abundance data or ", 
             "community weighted means (CWMs).\n")
@@ -96,59 +97,28 @@ anova_sites <- function(object,
   msqr <- msdvif(object$formulaEnv, object$data$dataEnv, object$weights$rows)
   Zw <- msqr$Zw
   Xw <- msqr$Xw
-  # residual predictor permutation
+  dfpartial <- msqr$qrZ$rank
+  if (rpp) {
+    randperm <- randperm_eX0sqrtw
+    perm_meth <- "Residualized predictor permutation\n"
+  } else {
+    randperm <- randperm_eY2
+    perm_meth <-  "Residualized response permutation\n"
+  }
   out_tes <- list()
-  out_tes[[1]] <- randperm_eX0sqrtw(Yw, Xw, Zw, sWn = sWn, 
-                                    permutations = permutations, by = by, 
-                                    return = "all")
+  out_tes[[1]] <- randperm(Yw, Xw, Zw, sWn = sWn, 
+                           permutations = permutations, by = by, 
+                           return = "all")
   if (by == "axis") {
     while (out_tes[[1]]$rank > length(out_tes)) {
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)
       out_tes[[length(out_tes) + 1]] <- 
-        randperm_eX0sqrtw(Yw, Xw, Zw, sWn = sWn, permutations = permutations, 
-                          by = by, return = "all")
+        randperm(Yw, Xw, Zw, sWn = sWn, permutations = permutations, 
+                 by = by, return = "all")
     }
   }
-  # what the env. variables explain of the trait-structured variation
-  ss <- c(sapply(out_tes, function(x) {
-    x$ss[1]
-  }), out_tes[[length(out_tes)]]$ss[2])
-  if (by == "axis") {
-    df <- c(rep(1, length(ss) - 1), 
-            out_tes[[length(out_tes)]]$df[2])
-    names(df) <- c(paste0("dcCA", seq_along(out_tes)), "Residual")
-  } else {
-    df <- out_tes[[length(out_tes)]]$df
-    names(df) <- c("dcCA", "Residual")
-  }
-  fraqExplained <- 
-    c(sapply(out_tes, function(x) x$ss[1]) / sum(out_tes[[1]]$ss), NA)
-  F0 <- c(sapply(out_tes, function(x)x$F0[1]), NA)
-  F.perm <- out_tes[[1]]$Fval
-  R2.perm <- out_tes[[1]]$R2.perm
-  if (length(out_tes) > 1) {
-    for (k in seq_along(out_tes)[-1]) {
-      F.perm <- cbind(F.perm, out_tes[[k]]$Fval)
-      R2.perm <- cbind(R2.perm, out_tes[[k]]$R2.perm)
-    }
-  }
-  p_val_axes1 <- c(cummax(sapply(out_tes, function(x) x$pval[1])), NA)
-  eig <- out_tes[[1]]$eig
-  names(eig) <- paste0("dcCA", seq_along(eig))
-  axsig_dcCA_sites <- data.frame(df = df, ChiSquare = ss, R2 = fraqExplained,
-                                 F = F0, `Pr(>F)` = p_val_axes1, 
-                                 check.names = FALSE)
-  object1 <- paste("Model:", c(object$call), "\n")
-  header <- paste0("Community-level permutation test using dc-CA\n",
-                   object1,
-                   "Residualized predictor permutation\n",
-                   howHead(attr(out_tes[[1]], "control")))
-  f_sites <- structure(axsig_dcCA_sites, heading = header, 
-                       control = attr(out_tes[[1]], "control"),
-                       Random.seed = attr(out_tes[[1]], "seed"),
-                       F.perm = F.perm,
-                       R2.perm = R2.perm,
-                       class = c("anova.cca", "anova", "data.frame"))
-  result <- list(table = f_sites, eigenvalues = eig)
+  f_sites <- fanovatable(out_tes, Nobs = N, dfpartial = dfpartial, type = "row", 
+                         calltext = c(object$call), perm_meth = perm_meth)  
+  result <- list(table = f_sites, eigenvalues = attr(f_sites, "eig"))
   return(result)
 }

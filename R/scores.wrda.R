@@ -26,6 +26,9 @@
 #' unit weighted mean square or with 3 both are scaled symmetrically 
 #' to weighted mean squares equal to the square root of eigenvalues. Negative 
 #' values are treated as the corresponding positive ones by \code{abs(scaling)}.
+#' @param normed logical (default \code{TRUE}) giving standardized regression
+#' coefficients and biplot scores. When \code{FALSE}, (regular)
+#' regression coefficients and (unstandardized) biplot scores.
 #' @param tidy Return scores that are compatible with \code{ggplot2}: all 
 #' variable \code{score}, the names by variable \code{label}. See
 #' weights (in \code{\link{dc_CA}} are in variable \code{weight}. See 
@@ -37,7 +40,7 @@
 #' 
 #' An example of which_cor is: \code{which_cor = c("acidity", "humidity")}
 #' 
-#' @return A data frame if \code{tidy = TRUE}. Otherwise, a matrix if a single 
+#' @returns A data frame if \code{tidy = TRUE}. Otherwise, a matrix if a single 
 #' item is asked for and a named list of matrices if more than one item is 
 #' asked for. The following names can be included: \code{c("sites", 
 #' "constraints_sites", "centroids", "regression", "t_values", "correlation", 
@@ -86,8 +89,9 @@ scores.wrda <- function(x,
                         choices = 1:2, 
                         display = "all", 
                         scaling = "sym", 
-                        which_cor = "in model", 
+                        which_cor = "in model",
+                        normed = TRUE,
                         tidy = FALSE) {
   scores_dcca(x, choices = choices, display = display, scaling = scaling,
-              which_cor = which_cor, tidy = tidy, ...)
+              which_cor = which_cor, normed = normed, tidy = tidy, ...)
 }

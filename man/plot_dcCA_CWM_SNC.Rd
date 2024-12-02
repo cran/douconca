@@ -12,7 +12,8 @@ plot_dcCA_CWM_SNC(
   facet = TRUE,
   newnames = NULL,
   remove_centroids = FALSE,
-  with_lines = TRUE,
+  with_lines = 2,
+  formula = y ~ x,
   getPlotdata2plotdCCA = NULL
 )
 }
@@ -46,11 +47,14 @@ result of \code{\link{scores.dcca}} with \code{tidy = TRUE}.}
 
 \item{remove_centroids}{logical to remove any centroids from the plot data 
 (default \code{FALSE}). Can be a two-vector, \emph{e.g.} 
-\code{c(TRUE, FALSE)} to remove only the environmental centroids.}
+\code{c(TRUE, FALSE)} to remove only the trait centroids.}
 
-\item{with_lines}{logical. Default \code{TRUE} for straight lines through 
-groups of points. \code{traitfactor = NA} and \code{envfactor = NA}. 
-Centroids are not displayed in this case.}
+\item{with_lines}{integer values (0,1,2). Default \code{2} for straight lines 
+through groups of points, with confidence intervals around the lines. 
+\code{with_lines=1} drops the confidence intervals and
+\code{with_lines=0} suppresses the lines.}
+
+\item{formula}{formula to use by ggplot geom_smooth (default y~x).}
 
 \item{getPlotdata2plotdCCA}{the results of an \code{\link{getPlotdata}}. 
 Default \code{NULL}.}
@@ -71,6 +75,10 @@ variables: \code{dcCA}\emph{k} with axis number \emph{k} and
 \code{"CWM-SNC", "groups", "points", "sizeweight"} for the y-axis, coloring, 
 shape and size of items, respectively.
 
+The current implementation does not distinguish groups of points, if there
+are two or more factors specified in the model. 
+No lines are plotted if  a single factor defines a model. 
+  
 The function is used in \code{\link{plot.dcca}}.
 }
 \examples{

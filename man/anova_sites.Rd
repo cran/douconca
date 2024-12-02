@@ -55,7 +55,7 @@ mod <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
              response = dune_trait_env$comm[, -1],  # must delete "Sites"
              dataEnv = dune_trait_env$envir,
              dataTraits = dune_trait_env$traits,
-             verbose = TRUE)
+             verbose = FALSE)
 anova(mod)
 
 a_species <- anova_species(mod)

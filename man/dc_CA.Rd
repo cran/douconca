@@ -67,8 +67,8 @@ A list of \code{class} \code{dcca}; that is a list with elements
 after removing empty rows and columns in \code{response} and after closure if 
 \code{divideBySiteTotals = TRUE} and with the corresponding rows in 
 \code{dataEnv} and \code{dataTraits} removed.}
-\item{weights}{a list of unit-sum weights of row and columns. The names of 
-the list are \code{c("row", "columns")}, in that order.}
+\item{weights}{a list of unit-sum weights of columns and rows. The names of 
+the list are \code{c("columns", "rows")}, in that order.}
 \item{Nobs}{number of sites (rows).}
 \item{CWMs_orthonormal_traits}{Community weighted means w.r.t. 
 orthonormalized traits.}
@@ -85,18 +85,26 @@ orthonormalized traits.}
 \item{c_traits_normed0}{mean, sd, VIF and (regression) coefficients of 
 the traits that define the dc-CA axes in terms of the 
 traits with t-ratios missing indicated by \code{NA}s for 'tval1'.}
-\item{inertia}{a one-column matrix with four inertias (weighted variances):
+\item{inertia}{a one-column matrix with, at most,
+six inertias (weighted variances):
 \itemize{
 \item total: the total inertia.
 \item conditionT: the inertia explained by the condition in 
 \code{formulaTraits} if present (neglecting row constraints).
-\item traits_explain: the inertia explained by the traits (neglecting the 
-row predictors and any condition in \code{formulaTraits}). This is the 
-maximum that the row predictors could explain in dc-CA (the sum of the 
-following two items is thus less than this value).
-\item conditionE: the trait-constrained inertia explained by the condition 
-in \code{formulaEnv}.
-\item constraintsTE: the trait-constrained inertia explained by the 
+\item traits_explain: the trait-structured variation, \emph{i.e.}
+the inertia explained by the traits (without constaints on the rows and 
+conditional on the Condition in \code{formulaTraits}).
+This is the  maximum that the row predictors could explain in dc-CA
+(the sum of the last two items is thus less than this value).
+\item env_explain: the environmentally structured variation, \emph{i.e.}
+the inertia explained by the environment (without constraints on the 
+columns but conditional on the Condition \code{formulaEnv}).
+This is the maximum that the column predictors could explain in 
+dc-CA (the item \code{constraintsTE} is thus less than this value).
+The value is \code{NA}, if there is collinearity in the environmental data.
+\item conditionTE: the trait-constrained variation explained by the 
+condition in \code{formulaEnv}.
+\item constraintsTE: the trait-constrained variation explained by the 
 predictors (without the row covariates).
 }
 }
@@ -177,10 +185,11 @@ A dc-CA can be carried out on, what statisticians call, the sufficient
 statistics of the method. This is useful, when the abundance data are not 
 available or could not be made public in a paper attempting reproducible 
 research. In this case, \code{response} should be a list
-with as first element community weighted means (CWMs) with respect to the 
-traits, and the trait data, and, optionally, further elements, for functions
+with as first element community weighted means 
+(e.g. \code{list(CWM = CWMs)}) with respect to the 
+traits, and the trait data, and, optionally, further list elements, for functions
 related to \code{dc_CA}. The minimum is a 
-\code{list(CWM, weight = list(columns = species_weights))} with CWM a matrix
+\code{list(CWM = CWMs, weight = list(columns = species_weights))} with CWM a matrix
 or data.frame, but then \code{formulaEnv}, \code{formulaTraits}, 
 \code{dataEnv}, \code{dataTraits} must be specified in the call to 
 \code{dc_CA}. The function \code{\link{fCWM_SNC}} and its example
@@ -204,8 +213,10 @@ mod <- dc_CA(formulaEnv = ~A1 + Moist + Mag + Use + Manure,
              formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
              response = dune_trait_env$comm[, -1],  # must delete "Sites"
              dataEnv = dune_trait_env$envir,
-             dataTraits = dune_trait_env$traits)
+             dataTraits = dune_trait_env$traits,
+			 verbose = FALSE)
 
+print(mod) # same output as with verbose = TRUE (the default of verbose).																		 
 anova(mod, by = "axis")
 # For more demo on testing, see demo dune_test.r
 
@@ -234,13 +245,15 @@ mod3 <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
               formulaTraits = ~ SLA + Height + LDMC + Lifespan + Condition(Seedmass),
               response = dune_trait_env$comm[, -1],  # must delete "Sites"
               dataEnv = dune_trait_env$envir,
-              dataTraits = dune_trait_env$traits, verbose = FALSE)
+              dataTraits = dune_trait_env$traits, 
+			  verbose = FALSE)
 
 cat("\nFor illustration: same model but using dc_CA_object = mod2 for speed, ", 
     "as the trait model and data did not change\n")
 mod3B <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
                dataEnv = dune_trait_env$envir,
-               dc_CA_object = mod2, verbose= FALSE)
+               dc_CA_object = mod2, 
+			   verbose= FALSE)
 cat("\ncheck on equality of mod3 (from data) and mod3B (from a dc_CA_object)\n",
     "the expected difference is in the component 'call'\n ")
 print(all.equal(mod3, mod3B)) #  only the component call differs
