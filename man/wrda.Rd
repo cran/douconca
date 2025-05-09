@@ -4,11 +4,19 @@
 \alias{wrda}
 \title{Performs a weighted redundancy analysis}
 \usage{
-wrda(formula, response, data, weights = rep(1, nrow(data)), verbose = TRUE)
+wrda(
+  formula,
+  response = NULL,
+  data,
+  weights = rep(1/nrow(data), nrow(data)),
+  traceonly = FALSE,
+  cca_object = NULL,
+  object4QR = NULL
+)
 }
 \arguments{
 \item{formula}{one or two-sided formula for the rows (samples) with row 
-predictors in \code{data}. The left hand side of the formula is ignored as
+predictors in \code{data}. The left hand side of the formula is ignored if
 it is specified in the next argument (\code{response}). Specify row 
 covariates (if any ) by adding \code{+ Condition(covariate-formula)} to 
 \code{formula} as in \code{\link[vegan]{rda}}. The \code{covariate-formula}
@@ -16,7 +24,8 @@ should not contain a \code{~} (tilde).}
 
 \item{response}{matrix or data frame of the abundance data (dimension 
 \emph{n} x \emph{m}). Rownames of \code{response}, if any, are carried 
-through.}
+through. Can be \code{NULL} if \code{cca_object} is supplied or 
+if the response is \code{formula} is two-sided.}
 
 \item{data}{matrix or data frame of the row predictors, with rows 
 corresponding to those in \code{response} (dimension \emph{n} x \emph{p}).}
@@ -24,10 +33,22 @@ corresponding to those in \code{response} (dimension \emph{n} x \emph{p}).}
 \item{weights}{row weights (a vector). If not specified unit weights are 
 used.}
 
-\item{verbose}{logical for printing a simple summary (default: TRUE)}
+\item{traceonly}{logical, default \code{FALSE}. If \code{TRUE}, only 
+the explained variance of the predictors and the \code{Condition()}
+are returned, \emph{i.e} without performing a singular value
+decompostion.}
+
+\item{cca_object}{a vegan-type cca-object of \emph{transposed} 
+\code{response}, from which centred abundance values
+ and row and column weights can be obtained.}
+
+\item{object4QR}{a vegan-type cca-object with weighted QR's for 
+\code{formula}, i.e. \code{qr(Z)} and \code{qr(XZ)} obtainable via 
+\code{get_QR(object4QR, model = "pCCA")} and
+\code{get_QR(object4QR, model = "CCA")}, respectively.}
 }
 \value{
-All scores in the \code{dcca} object are in scaling \code{"sites"} (1): 
+All scores in the \code{wrda} object are in scaling \code{"sites"} (1): 
 the scaling with \emph{Focus on Case distances}.
 }
 \description{
@@ -36,11 +57,6 @@ the scaling with \emph{Focus on Case distances}.
 \details{
 The algorithm is a modified version of published R-code for weighted 
 redundancy analysis (ter Braak, 2022).
-
-In the current implementation, \code{formula} should contain variable names
-as is, \emph{i.e.} transformations of variables in the formulas gives
-an error ('undefined columns selected') when the \code{\link{scores}} 
-function is applied.
 
 Compared to  \code{\link[vegan]{rda}}, \code{wrda} does not have residual 
 axes, \emph{i.e.} no SVD or PCA of the residuals is performed.
@@ -56,8 +72,7 @@ w <- rep(1, 20)
 w[1:10] <- 8 
 w[17:20] <- 0.5
 
-object <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
-               response = response, 
+object <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure),
                data = dune_trait_env$envir, 
                weights = w)
 object # Proportions equal to those Canoco 5.15

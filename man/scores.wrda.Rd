@@ -2,7 +2,8 @@
 % Please edit documentation in R/scores.wrda.R
 \name{scores.wrda}
 \alias{scores.wrda}
-\title{Extract results of a weighted redundancy analysis (wrda)}
+\title{Extract results of a weighted redundancy analysis (wrda) or a
+cca0 object.}
 \usage{
 \method{scores}{wrda}(
   x,
@@ -17,7 +18,7 @@
 }
 \arguments{
 \item{x}{object of class \code{"wrda"}, \emph{i.e.} result of 
-\code{\link{wrda}}.}
+\code{\link{wrda}} or \code{\link{cca0}}.}
 
 \item{...}{Other arguments passed to the function (currently ignored).}
 
@@ -116,8 +117,7 @@ w <- rep(1, 20)
 w[1:10] <- 8 
 w[17:20] <- 0.5
 
-object <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
-               response = response, 
+object <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure),
                data = dune_trait_env$envir, 
                weights = w)
 object # Proportions equal to those Canoco 5.15

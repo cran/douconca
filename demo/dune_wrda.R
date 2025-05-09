@@ -8,8 +8,7 @@ w <- rep(1, 20)
 w[1:10] <- 8 
 w[17:20] <- 0.5
 
-object <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
-               response = response, 
+object <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure),
                data = dune_trait_env$envir, 
                weights = w)
 object # Proportions equal to those Canoco 5.15

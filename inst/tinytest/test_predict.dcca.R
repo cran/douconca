@@ -24,8 +24,9 @@ mod1a <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
 # to have all levels of the training data
 CWMfit1a <- fitted(mod1a, type = "CWM")
 dat <- mod1a$data$dataEnv[17, ]
-dat$Mag <- levels(dat$Mag)[dat$Mag]
+dat$Mag <- levels(dat$Mag)[dat$Mag] # factor to chr!
 CWMfit1a17 <- predict(mod1a, type = "CWM", newdata = dat)
+
 expect_equal(CWMfit1a17[1, ], CWMfit1a[17, ])
 
 dat1 <- mod1a$data$dataEnv
@@ -214,8 +215,7 @@ CWMSNC <- fCWM_SNC(formulaEnv = ~ Sites,
                    response = dune_trait_env$comm[, -1],  # must delete "Sites"
                    dataEnv = envir,
                    dataTraits = traits,
-                   divideBySiteTotals = divide,
-                   verbose = FALSE)
+                   divideBySiteTotals = divide)
 
 CWMfit <- fitted(mod_dccaCWM, type = "CWM")
 expect_equivalent(CWMfit, CWMSNC$CWM)# full rank fit! PASSED without the factor sqrt(20)
@@ -240,8 +240,7 @@ CWMSNCb <- fCWM_SNC(formulaEnv = ~ Moist + Mag,
                     response = dune_trait_env$comm[, -1],  # must delete "Sites"
                     dataEnv = envir,
                     dataTraits = traits,
-                    divideBySiteTotals = divide,
-                    verbose = FALSE)
+                    divideBySiteTotals = divide)
 
 SNCfit <- fitted(mod_dccaSNC, type = "SNC")
 expect_equivalent(SNCfit[, -2], CWMSNCb$SNC)# Passed Without the factor sqrt(28)!
@@ -259,15 +258,14 @@ mod_DivF_dccaA1 <- dc_CA(formulaEnv = ~ A1 + Manure + Moist,
                          dataTraits = traits,
                          divideBySiteTotals = divide,
                          verbose = FALSE)
-expect_stdout(
-  mod_DivF_dccaA11 <- 
+mod_DivF_dccaA11 <- 
     dc_CA(formulaEnv = ~ A1 + A11 + Manure + Moist,
           formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
           response = Y, 
           dataEnv = envir,
           dataTraits = traits,
           divideBySiteTotals = divide,
-          verbose = FALSE))
+          verbose = FALSE)
 expect_equal(predict(mod_DivF_dccaA1, type = "response"),
              predict(mod_DivF_dccaA11, type = "response"))
 
@@ -280,14 +278,13 @@ mod_DivF_dccaSLA <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
                           dataTraits = traits,
                           divideBySiteTotals = divide,
                           verbose = FALSE)
-expect_message(
-  mod_DivF_dccaSLA11 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
+expect_warning(mod_DivF_dccaSLA11 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
                               formulaTraits = ~ SLA + SLA11+ Height + LDMC + Seedmass + Lifespan,
                               response = Y, 
                               dataEnv = envir,
                               dataTraits = traits,
                               divideBySiteTotals = divide,
-                              verbose = FALSE))
+                              verbose = FALSE),"Collinearity detected in CWM-model")
 
 expect_equal(predict(mod_DivF_dccaSLA, type = "response"),
              predict(mod_DivF_dccaSLA11, type = "response"))

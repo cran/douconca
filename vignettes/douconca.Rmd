@@ -26,18 +26,18 @@ The aim of the `douconca` package is to help ecologists unravel trait-environmen
 relationships from an abundance data table with
 associated multi-trait and multi-environment data tables.
 A popular method to such aim is RLQ [@doledec1996RLQ;@dray2014RLQ],
-which also a three-tables method. RLQ is available in the R-package `ade4`[@dray2007ade4; @thioulouse2018multivariate].
+which also a three-tables method. RLQ is available in the R-package `ade4`
+[@dray2007ade4; @thioulouse2018multivariate].
 The `douconca` package provides an alternative method, termed 
 double-constrained correspondence analysis (dc-CA), which is a natural 
 extension of the commonly used method of community-weighted means (CWMs) regression
-[@Braak2018dcCA;@kleyer2012assessing]. 
+[@BraakRossum2025;@Braak2018dcCA;@kleyer2012assessing].  
 As dc-CA is based on both regression analysis and ordination
 (factorial analysis), it allows for the usual forms of testing, model building,
 and of biplots of resulting scores.
-There are a number of recent applications that also contain discussion
-on the value of dc-CA compared to RLQ
-[@peng2021double;@gobbi2022hay;@pinho2021functional], summarized in this document on
-[ResearchGate](https://www.researchgate.net/publication/379731819_dc-CA_RLQ).
+
+The value of dc-CA compared to RLQ, GLMM3 and CWM-regression
+is discussed, with examples, in ter Braak and van Rossum (2025).
 
 The `douconca` package has a `formula`-interface to specify the dc-CA model, 
 and `scores`, `anova`, `plot` and `predict` functions, mostly fairly similar to
@@ -75,7 +75,7 @@ of which is the final P-value. As in the `vegan` package, the permutations are
 specified via the `permute` package [@permute2022], so as to allow for analysis of
 hierarchical and nested data designs [@gobbi2022hay].
 
-In `douconca`, a dc-CA models is specified by two formulas:
+In `douconca`, a dc-CA model is specified by two formulas:
 a `formula` for the sites (rows) with environmental predictors and a
 `formula` for the species (columns) with trait predictors, which both 
 may contain factors, quantitative variables and transformations thereof, and interactions,
@@ -89,7 +89,7 @@ available in the Canoco software [@Braak2018canoco], but has less appeal in ecol
 such as CWM-regression and fourth-corner correlation analysis, which have proven to be 
 useful in trait-based ecology. 
 
-
+A full-length treatment of dc-CA, with examples, is given in ter Braak and van Rossum (2025).																	 
 # Example data and questions
 
 We use the `dune_trait_env` data in the package to illustrate dc-CA. It consists of
@@ -107,8 +107,8 @@ names(dune_trait_env$traits)
 names(dune_trait_env$envir)
 ```
 There are five morphological traits (from the `LEDA` trait database)
-and four ecological traits (Ellenberg indicator values for moisture, 
-acidity, nutrients and light).
+and four ecological traits (Ellenberg indicator values for moisture (F), 
+acidity (R), nutrients (N) and light (L)).
 
 There are five environmental variables and two sets of two spatial coordinates,
 which are approximately equal. The `X` and `Y` are the coordinates of the plot.
@@ -168,7 +168,7 @@ as judged by the size of their regression coefficient and
 variables with the axis, but t-values can be visualized with 
 
 ```{r, fig.width=7}
-plot(mod,gradient_description = "t")
+plot(mod, gradient_description = "t")
 ```
 
 ## Statistical testing
@@ -203,7 +203,9 @@ There are three kinds of fitted values (and of predictions for new data):
 * fitted abundances, obtained with `predict(mod, type = "response" )`
 
 The fitted traits per site are simply fitted community-weighted means and the fitted 
-environmental values are fitted species-niche centroids. 
+environmental values are fitted species-niche centroids, as is clearer from
+the statements `fitted(mod, type = "CWM")` and `fitted(mod, type = "SNC")`,
+respectively.
 Note that 10% of the fitted abundance values is negative in our example. 
 Negative values indicate likely absences or low abundance values of species with the
 specified traits and environmental values.
@@ -260,16 +262,17 @@ the trait formula and perform an `anova` of the resulting model.
 
 ```{r}
 mod_mGe <-  dc_CA(formulaEnv = ~ A1 + Moist + Manure + Use + Mag,
-                 formulaTraits = 
-                   ~ SLA + Height + LDMC + Seedmass + Lifespan + Condition(F+R+N+L),
+                 formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan +
+                   Condition(F + R + N + L),
                  response = Y,
                  dataEnv = dune_trait_env$envir,
                  dataTraits = dune_trait_env$traits, verbose = FALSE)
 anova(mod_mGe, by= "axis")$max
 ```
 
-As jugded by the test of significance by axes, the morphological traits
-contribute little.
+As jugded by the test of significance by axes, there is little evidence
+that the morphological traits contribute to the explanation of 
+(environmentally structured) abundance of species.
 
 # One trait: CWM regression without inflated type I error.
 
@@ -309,10 +312,10 @@ the arguments of which are similar to that of the `dc_CA` function.
 
 ```{r}
 CWMSNC_LDMC <- fCWM_SNC(formulaEnv = ~ A1 + Moist + Manure + Use + Mag,
-                      formulaTraits = ~ LDMC,
-                      response = Y, 
-                      dataEnv = dune_trait_env$envir,
-                      dataTraits = dune_trait_env$trait, verbose = FALSE)
+                        formulaTraits = ~ LDMC,
+                        response = Y, 
+                        dataEnv = dune_trait_env$envir,
+                        dataTraits = dune_trait_env$trait)
 ```
 The result, `CWMSNC_LDMC`, is a list containing the CWMs of LDMC, among other items. 
 We combine the (community-weighted) mean LDMC to the environmental data, 
@@ -356,4 +359,8 @@ The t-values are also equal:
 cbind(summary(lmLDMC)$coefficients[-1, "t value", drop = FALSE],
 scores(mod_LDMC, display = "tval"))
 ```
+
+Alternatively, we can use 
+`coef(mod_LDMC,  type = "env2traits",normed = FALSE)`
+which give the same values as `coef(lmLDMC)[-1]`.
 # References

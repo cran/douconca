@@ -100,7 +100,7 @@ predict.dcca <- function(object,
     }
   } else {
     if (is.null(newdata)) {
-      if (type %in% c("traitsFromEnv", "SNC")) {
+      if (type %in% c("traitsFromEnv", "SNC", "lc")) {
         newdata <- object$data$dataEnv 
       } else {
         newdata <- object$data$dataTraits

@@ -15,19 +15,19 @@ downloads](https://cranlogs.r-pkg.org/badges/douconca)](https://www.r-pkg.org/pk
 <!-- badges: end -->
 
 R library `douconca` analyzes multi-trait multi-environment ecological
-data by double constrained correspondence analysis (ter Braak et al.
-2018) using `vegan` and native R code. It has a `formula` interface for
-the trait- (column-) and environment- (row-) models, which allows to
-assess, for example, the importance of trait interactions in shaping
-ecological communities. Throughout the two step algorithm of ter Braak
-et al. (2018) is used. This algorithm combines and extends community-
-(sample-) and species-level analyses, i.e. the usual community weighted
-means (CWM)-based regression analysis and the species-level analysis of
-species-niche centroids (SNC)-based regression analysis. The CWM
-regressions are specified with an environmental formula and the SNC
-regressions are specified with a trait formula. dcCA finds the
-environmental and trait gradients that optimize these regressions. The
-first step uses
+data by double constrained correspondence analysis (ter Braak & van
+Rossum, 2025) using `vegan` and native R code. It has a `formula`
+interface for the trait- (column-) and environment- (row-) models, which
+allows to assess, for example, the importance of trait interactions in
+shaping ecological communities. Throughout the two step algorithm of ter
+Braak et al. (2018) is used. This algorithm combines and extends
+community- (sample-) and species-level analyses, i.e. the usual
+community weighted means (CWM)-based regression analysis and the
+species-level analysis of species-niche centroids (SNC)-based regression
+analysis. The CWM regressions are specified with an environmental
+formula and the SNC regressions are specified with a trait formula. dcCA
+finds the environmental and trait gradients that optimize these
+regressions. The first step uses
 <a href="https://vegandevs.github.io/vegan/reference/cca.html"
 class="uri">cca</a> (Oksanen et al. 2022) to regress the transposed
 abundance data on to the traits and (weighted) redundancy analysis to
@@ -43,12 +43,16 @@ analysis corresponds with an unweighted (multi-trait) community-level
 analysis, instead of being weighted, which may give a puzzling
 difference between common univariate and this multivariate analysis.
 
-Reference: ter Braak, CJF, Šmilauer P, and Dray S. 2018. Algorithms and
+References: ter Braak, CJF, Šmilauer P, and Dray S. 2018. Algorithms and
 biplots for double constrained correspondence analysis. Environmental
 and Ecological Statistics, 25(2), 171-197.
 <https://doi.org/10.1007/s10651-017-0395-x>
 
-## Installation
+ter Braak, C.J.F. and van Rossum, B. (2025). Linking Multivariate Trait
+Variation to the Environment: Advantages of Double Constrained
+Correspondence Analysis with the R Package Douconca. Ecological
+Informatics, 88. <https://doi.org/10.1016/j.ecoinf.2025.103143> \##
+Installation
 
 You can install the CRAN version of `douconca` by:
 
@@ -60,5 +64,5 @@ You can install the development version of `douconca` by:
 
 ``` r
 install.packages("remotes")
-remotes::install_github("CajoterBraak/douconca")
+remotes::install_github("Biometris/douconca", ref = "develop", dependencies = TRUE)
 ```

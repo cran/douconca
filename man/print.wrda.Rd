@@ -2,12 +2,12 @@
 % Please edit documentation in R/print.wrda.R
 \name{print.wrda}
 \alias{print.wrda}
-\title{Print a summary of a wrda object}
+\title{Print a summary of a wrda or cca0 object}
 \usage{
 \method{print}{wrda}(x, ...)
 }
 \arguments{
-\item{x}{a wrda object from \code{\link{wrda}}}
+\item{x}{an object from \code{\link{wrda}} or \code{\link{cca0}}}
 
 \item{...}{Other arguments passed to the function (currently ignored).}
 }
@@ -15,7 +15,7 @@
 No return value, results are printed to console.
 }
 \description{
-Print a summary of a wrda object
+Print a summary of a wrda or cca0 object
 }
 \examples{
 data("dune_trait_env")
@@ -28,8 +28,7 @@ w <- rep(1, 20)
 w[1:10] <- 8 
 w[17:20] <- 0.5
 
-object <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
-               response = response, 
+object <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure),
                data = dune_trait_env$envir, 
                weights = w)
 object # Proportions equal to those Canoco 5.15

@@ -1,3 +1,16 @@
+# douconca 1.2.3
+
+* Forward selection of traits and of environmental variables added (function FS()).
+* Function ipf2N2 for informative pre-processing of abundance data. The 
+row and column marginals are set equal to Hill N2 or, the column
+marginals to 2N(N-N2)/2, the effective number of informative species.
+informative species
+* More efficiency for large data sets by addition of a new cca function (cca0).
+* An anova method for cca0 to enable residual predictor permutation.
+* Improved stability for 'exceptional' data sets.
+* The response can now be supplied as left-hand side of the environmental formula,
+instead of by the response argument.
+
 # douconca 1.2.2
 
 * New coef.dcca() and fitted.dcca() functions with predict.dcca() adapted.

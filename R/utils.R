@@ -7,9 +7,9 @@ wcor <- function(X,
                  w = rep(1, nrow(X))) {
   # weighted correlation between matrix X and Y
   w <- w / sum(w)
-  Xstd <- standardize_w(X, w)
+  Xstd <- standardize_w(X, w) * w
   Ystd <- standardize_w(Y, w)
-  t(Xstd) %*% diag(w) %*% Ystd
+  t(Xstd) %*% Ystd
 }
 
 #' @noRd
@@ -23,29 +23,28 @@ mean_w <- function(X,
 #' @keywords internal
 center_w <- function(X,
                      w = rep(1 / nrow(X), nrow(X))) {
-  X - rep(1, length(w)) %*% t(w) %*% X 
+  X - matrix(t(w) %*% X, nrow = nrow(X), ncol= ncol(X), byrow = TRUE)
 }
 
 #' @noRd
 #' @keywords internal
 standardize_w <- function(X, 
                           w = rep(1 / nrow(X), nrow(X))) {
-  # NB requires w to be have sum 1
-  ones <- rep(1, length(w))
-  Xc <- X - ones %*% t(w) %*% X
-  Xstd <- Xc / ones %*% sqrt(t(ones) %*% (Xc * Xc * w))
+  w<- w / sum(w)						   
+  Xc <- X - matrix(t(w) %*% X, nrow = nrow(X), ncol = ncol(X), byrow = TRUE)
+  std <- sqrt(colSums(Xc * Xc * w))
+  Xstd <- Xc / matrix(std, nrow = nrow(X), ncol = ncol(X), byrow = TRUE)
   return(Xstd)
 }
 
 #' @noRd
-#' @keywords internal
+#' @keywords internal					 
 mean_sd_w <- function(X,
                       w = rep(1 / nrow(X), nrow(X))){
   # NB requires w to be have sum 1
-  ones <- rep(1, length(w))
-  mean_w <- t(w / sum(w)) %*% X
-  Xc <- X - ones %*% mean_w
-  sd_w <-  sqrt(t(ones) %*% (Xc * Xc * w))
+  mean_w <- t(w) %*% X
+  Xc <- X - matrix(mean_w, nrow = nrow(X), ncol = ncol(X), byrow = TRUE) 
+  sd_w <- sqrt(colSums(Xc * Xc * w))
   return(list(mean = mean_w, sd = sd_w))
 }
 
@@ -56,9 +55,11 @@ msdvif <- function(formula = NULL,
                    weights, 
                    XZ = FALSE, 
                    novif = FALSE, 
-                   contrast = TRUE) {
+                   contrast = TRUE,
+                   object4QR = NULL) {
   # calc mean variance and vif from for X given Z or XZ 
   # with qr of X|Z or of centered XZ
+  # object4QR: cca_object with weighted QR of Z and XZ													  
   if (is.null(formula)) {
     f <- ~. 
   } else {
@@ -82,13 +83,14 @@ msdvif <- function(formula = NULL,
   sds <- msd$sd;
   sWn <- sqrt(weights)
   Zw <- model.matrix(ff$formula_Z, data) * sWn
-  qrZ <- qr(Zw)
+  qrZ <- if (is.null(object4QR)) qr(Zw) else get_QR(object4QR, model = "pCCA")
+  if (is.null(qrZ)) qrZ <- qr(matrix(sWn))
   if (XZ) {
     Xw <- qr.resid(qr(matrix(sWn)), X * sWn) 
   } else { 
     Xw <- qr.resid(qrZ, X * sWn)
   }
-  qrX <- qr(Xw)
+  qrX <- if (is.null(object4QR) || !XZ) qr(Xw) else get_QR(object4QR, model = "CCA")
   diagXtX_inv <- diag(chol2inv(qrX$qr, size = qrX$rank))
   diagXtX_inv <- c(diagXtX_inv, rep(NA, length(sds)- length(diagXtX_inv)))
   VIF <- diagXtX_inv * sds ^ 2

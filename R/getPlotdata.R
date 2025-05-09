@@ -100,6 +100,7 @@ getPlotdata <- function(x,
     # cannot do the species plot, can do CWM plot only
     stop("no unconstrained species scores, make a CWM plot instead.")
   }
+  oldNameList <- setnames(mod_scores, newnames = NULL)
   newNameList <- setnames(mod_scores, newnames = newnames)
   idTFc <- mod_scores$score %in% c("constraints_sites", "constraints_species", 
                                    "centroids", "centroids_traits")
@@ -249,10 +250,22 @@ getPlotdata <- function(x,
     list(traitlevels = traitlevels, envlevels = envlevels)
   res <- list(CWM_SNC = scorepair, 
               trait_env_scores = trait_env_scores, 
+			  oldNameList = oldNameList,
               newNameList = newNameList)
   return(res)
 }
 
+#' @details
+#' What are covariates among the regression coefficients/tvalues
+#' is determined in setnames 
+#' by comparing the intraset correletion names with the regression names.
+#' The covariates are in the regression names
+#' but not in the correlation names (these are the colnames of
+#' modelmatrixI(formulaX1, data = env/traits )). 
+#' So, the correlation names have also too many names,
+#' namely the collinear coefficients 
+#' (e.g. first level of a factor).
+#' 
 #' @noRd
 #' @keywords internal
 setnames <- function(mod_scores, 

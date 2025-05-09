@@ -5,7 +5,9 @@
 #' redundancy analysis (wRDA), which is robust against differences in the 
 #' weights (ter Braak, 2022). The arguments of the function are similar to 
 #' those of \code{\link[vegan]{anova.cca}}, but more restricted.
-#
+#'
+#' @inheritParams anova_species
+#'
 #' @param object an object from \code{\link{dc_CA}}.
 #' @param ... unused.
 #' @param permutations a list of control values for the permutations as
@@ -17,7 +19,7 @@
 #' first eigenvalue of the RDA model. Default: \code{NULL} which sets the test
 #' statistic to the weighted variance fitted by the predictors
 #' (=sum of all constrained eigenvalues). The default is quicker 
-#' computationally as it avoids computation of an svd of permuted data sets.
+#' computationally as it avoids computation of an svd of permuted data sets.							   
 #' 
 #' @details
 #' The algorithm is based on published R-code for residual predictor 
@@ -42,7 +44,8 @@
 anova.wrda <- function(object, 
                        ...,
                        permutations = 999, 
-                       by = c("omnibus", "axis")) {
+                       by = c("omnibus", "axis"),
+                       n_axes = "all") {
   # permat  a matrix of permutations. 
   # If set overrules permuations.
   by <- match.arg(by)
@@ -60,16 +63,18 @@ anova.wrda <- function(object,
   # Perform a weighted RDAR(M^*~E): an RDA of M^* on the environmental variables
   # using row weights R.
   sWn <- sqrt(object$weights$rows)
-  Yw <-  object$eY * sqrt(object$Nobs/ (object$Nobs-1))
-  msqr <- msdvif(object$formula, object$data, object$weights$rows, XZ = FALSE)
+  Yw <- object$Ybar
+  msqr <- msdvif(object$formula, object$data, object$weights$rows, XZ = FALSE,
+                 object4QR = object)				
   Zw <- msqr$Zw 
   Xw <- msqr$Xw
+  Yw <- qr.resid(msqr$qrZ, Yw)
   dfpartial = msqr$qrZ$rank
   # residual predictor permutation.
   out_tes <- list()
   out_tes[[1]]  <- randperm_eX0sqrtw(Yw,Xw, Zw, sWn = sWn, 
-                                     permutations = permutations, 
-                                     by = by, return = "all")
+                                     permutations = permutations, by = by,
+                                     return = "all")
   if (by == "axis") {
     while (out_tes[[1]]$rank > length(out_tes)) {
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)

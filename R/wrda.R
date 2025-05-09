@@ -2,36 +2,28 @@
 #'
 #' @description
 #' \code{wrda} is formula-based implementation of weighted redundancy analysis.
+#' 
+#' @inheritParams cca0
 #'
-#' @param formula one or two-sided formula for the rows (samples) with row 
-#' predictors in \code{data}. The left hand side of the formula is ignored as
-#' it is specified in the next argument (\code{response}). Specify row 
-#' covariates (if any ) by adding \code{+ Condition(covariate-formula)} to 
-#' \code{formula} as in \code{\link[vegan]{rda}}. The \code{covariate-formula}
-#' should not contain a \code{~} (tilde). 
 #' @param response matrix or data frame of the abundance data (dimension 
 #' \emph{n} x \emph{m}). Rownames of \code{response}, if any, are carried 
-#' through.
-#' @param data matrix or data frame of the row predictors, with rows 
-#' corresponding to those in \code{response} (dimension \emph{n} x \emph{p}).
+#' through. Can be \code{NULL} if \code{cca_object} is supplied or 
+#' if the response is \code{formula} is two-sided.							  
+#' @param cca_object a vegan-type cca-object of \emph{transposed} 
+#' \code{response}, from which centred abundance values
+#'  and row and column weights can be obtained.
 #' @param weights row weights (a vector). If not specified unit weights are 
 #' used.
-#' @param verbose logical for printing a simple summary (default: TRUE)
 #
 #' @details
 #' The algorithm is a modified version of published R-code for weighted 
 #' redundancy analysis (ter Braak, 2022).
 #'
-#' In the current implementation, \code{formula} should contain variable names
-#' as is, \emph{i.e.} transformations of variables in the formulas gives
-#' an error ('undefined columns selected') when the \code{\link{scores}} 
-#' function is applied.
-#'
 #' Compared to  \code{\link[vegan]{rda}}, \code{wrda} does not have residual 
 #' axes, \emph{i.e.} no SVD or PCA of the residuals is performed.
 #'
 #' @returns
-#' All scores in the \code{dcca} object are in scaling \code{"sites"} (1): 
+#' All scores in the \code{wrda} object are in scaling \code{"sites"} (1): 
 #' the scaling with \emph{Focus on Case distances}.
 #'
 #' @references
@@ -50,35 +42,70 @@
 #' 
 #' @export
 wrda <- function(formula, 
-                 response, 
+                 response = NULL, 
                  data, 
-                 weights = rep(1, nrow(data)), 
-                 verbose = TRUE) {
+                 weights = rep(1 / nrow(data), nrow(data)),
+                 traceonly = FALSE,
+                 cca_object = NULL,
+                 object4QR = NULL) {
   call <- match.call()
-  Wn <- weights / sum(weights)
-  sWn <- sqrt(Wn)
-  msqr <- msdvif(formula, data = data, weights = Wn, XZ = TRUE)
-  # transform to the unweighted case
-  Yw <- as.matrix(response) * sWn
-  # center
-  Yw <- unweighted_lm_Orthnorm(Yw, matrix(sWn))
-  total_variance <- sum(Yw ^ 2)
+  if (!is.null(cca_object)) {
+    # check whether eY works with and without trait covariates
+    Yw <- cca_object$Ybar
+    transp <- f_transpose(Yw, data, response)
+    if (is.na(transp)) {
+      warning("cca_object not usable.\n")
+      cca_object <- NULL
+    }
+  }
+  if (is.null(cca_object)) {
+    if (is.null(response)) response <- get_response(formula)														
+    Yn <- as.matrix(response) 
+    K <- rep(1 / ncol(Yn), ncol(Yn))
+    Wn <- weights / sum(weights)
+    sWn <- sqrt(Wn)
+    # transform to the unweighted case
+    Yw <- as.matrix(response) * sWn
+    # center
+    Yw <- unweighted_lm_Orthnorm(Yw, matrix(sWn)) * sqrt(nrow(Yn) / (nrow(Yn) - 1))
+    total_variance <- sum(Yw ^ 2) #total_inertia
+  } else {  # use cca_object
+    if (transp) {
+      Yw <- t(Yw) 
+      weights <- rev(cca_object$weights)
+    } else {
+      weights <- cca_object$weights
+    }
+    K <- weights[[1]]
+    Wn <- weights[[2]]
+    sWn <-sqrt(Wn)
+    sumY <- cca_object$sumY
+    total_variance <- cca_object$tot.chi
+  } # cca_object
+  msqr <- msdvif(formula, data = data, weights = Wn, XZ = TRUE,
+                 object4QR = object4QR)
   eY <- qr.resid(msqr$qrZ, Yw)
   Yfit_X <- qr.fitted(msqr$qrXZ, eY)
+  ssY_gZ <- sum(eY ^ 2) 
+  ssY_XgZ <- sum(Yfit_X ^ 2)
+  if (traceonly) {
+    inert <- c(Condition_inertia = total_variance - ssY_gZ, Fit_inertia = ssY_XgZ)
+    attr(inert, which = "rank") <-
+      c(Cond = msqr$qrZ$rank - 1, Fit = msqr$qrXZ$rank - msqr$qrZ$rank + 1)
+    return(inert)
+  }
   svd_Yfit_X <- SVDfull(Yfit_X)
   biplot <- NULL
-  Nobs <- nrow(Yw)
-  fct <- Nobs / (Nobs - 1)
-  total_variance <- total_variance * fct
-  ssY_gZ <- sum(eY ^ 2) * fct
-  ssY_XgZ <- sum(Yfit_X ^ 2) * fct
-  eig <- svd_Yfit_X$d ^ 2 * fct
+  eig <- svd_Yfit_X$d ^ 2
   names(eig) <- paste0("wRDA", seq_along(eig))
   CCA <- with(svd_Yfit_X, list(eig = eig, poseig = eig, u = u, v = v, 
                                rank = rank, qrank = msqr$qrXZ$rank,
                                tot.chi = ssY_XgZ, QR = msqr$qrXZ, 
                                biplot = biplot, envcentre = NULL, 
                                centroids = NULL))
+  rank_CA <- min(nrow(Yw)-1, ncol(Yw)) 
+  eig_CA <- rep(NA, rank_CA)
+  names(eig_CA) <- paste0("wPCA", seq_len(rank_CA))
   if (ncol(msqr$Zw) == 1) {
     pCCA <- NULL 
   } else {
@@ -92,22 +119,36 @@ wrda <- function(formula,
     diagd <- diag(svd_Yfit_X$d)
   }
   # need to be orthogonalized w.r.t Z
-  fct <- sqrt(fct)
   site_axes <- list(
     site_scores = list(
-      site_scores_unconstrained = qr.resid(msqr$qrZ, eY %*% svd_Yfit_X$v) / (sWn / fct),
-      lc_env_scores = (svd_Yfit_X$u %*% diagd) / (sWn / fct)
+      site_scores_unconstrained = qr.resid(msqr$qrZ, eY %*% svd_Yfit_X$v) / sWn,
+      lc_env_scores = (svd_Yfit_X$u %*% diagd) /sWn
     )
   )
   species_axes <- list(species_scores = 
                          list(species_scores_unconstrained = svd_Yfit_X$v))
   object <- list(call = call, method = "wrda", tot.chi = total_variance,
                  formula = formula, site_axes = site_axes, 
-                 species_axes = species_axes, Nobs = Nobs, eigenvalues = eig,
-                 weights = list(rows = Wn, columns = rep(1 / ncol(eY), ncol(eY))),
-                 data = data, eY = eY, pCCA = pCCA, CCA = CCA, 
-                 CA = list(tot.chi = ssY_gZ - ssY_XgZ, rank = 0)
+                 species_axes = species_axes, Nobs = nrow(Yw), eigenvalues = eig,
+                 weights = list(columns = K, rows = Wn),
+                 data = data, Ybar = Yw, pCCA = pCCA, CCA = CCA, 
+                 CA = list(tot.chi = ssY_gZ - ssY_XgZ, rank = rank_CA, eig = eig_CA),
+                 inertia = "weighted variance"
   )
   class(object) <- "wrda"
   return(object)
 }
+
+#' @noRd
+#' @keywords internal
+f_transpose <- function(Yw, 
+                        data,
+                        response) {
+  transpose <- if (nrow(data) == ncol(Yw)) TRUE else 
+    if (nrow(data) == nrow(Yw)) FALSE else NA
+  if (nrow(Yw) == ncol(Yw) && !is.null(response)) {
+    transpose <- if (rownames(Yw)[1] == colnames(response)[1]) TRUE else
+      if (rownames(Yw)[1] == rownames(response)[1]) FALSE else NA
+  }
+  return(transpose)
+}		

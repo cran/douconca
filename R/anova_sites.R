@@ -10,13 +10,16 @@
 #' The arguments of the function are similar to those of 
 #' \code{\link[vegan]{anova.cca}}, but more restricted. With equal site-totals 
 #' as in \code{\link{dc_CA}}, \code{anova(object$RDAonEnv)} is much faster.
-#
-#' @param  object an object from \code{\link{dc_CA}}.
+#'
+#' @inheritParams anova_species
+#'
+#' @param object an object from \code{\link{dc_CA}}.
 #' @param permutations a list of control values for the permutations as 
 #' returned by the function \code{\link[permute]{how}}, or the number of 
 #' permutations required (default 999), or a permutation matrix where each 
 #' row gives the permuted indices.
-#'
+#' @param rpp Logical indicating residual predictor permutation (default \code{TRUE}).
+#' When \code{FALSE}, residual response permutation is used.
 #' @param  by character \code{"axis"} which sets the test statistic to the 
 #' first eigenvalue of the dc-CA model. Default: \code{NULL} which sets the 
 #' test statistic to the inertia (sum of all double constrained eigenvalues; 
@@ -52,9 +55,10 @@
 #' 
 #' @export
 anova_sites <- function(object, 
-                        permutations = 999, 
-                        by = NULL) {
-  rpp <- TRUE
+                        permutations = 999,
+                        rpp = TRUE,
+                        n_axes = "all",
+                        by = NULL) { 
   if (is.null(object$CWMs_orthonormal_traits)) {
     warning("Site level anova requires abundance data or ", 
             "community weighted means (CWMs).\n")
@@ -108,7 +112,7 @@ anova_sites <- function(object,
   out_tes <- list()
   out_tes[[1]] <- randperm(Yw, Xw, Zw, sWn = sWn, 
                            permutations = permutations, by = by, 
-                           return = "all")
+                           n_axes = n_axes, return = "all")
   if (by == "axis") {
     while (out_tes[[1]]$rank > length(out_tes)) {
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)
@@ -118,7 +122,7 @@ anova_sites <- function(object,
     }
   }
   f_sites <- fanovatable(out_tes, Nobs = N, dfpartial = dfpartial, type = "row", 
-                         calltext = c(object$call), perm_meth = perm_meth)  
+                         calltext = c(object$call), perm_meth = perm_meth)
   result <- list(table = f_sites, eigenvalues = attr(f_sites, "eig"))
   return(result)
 }

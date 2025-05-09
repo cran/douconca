@@ -23,6 +23,7 @@ modDivF1a <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
 
 set.seed(123)
 modDivF1a_an <- anova(modDivF1a)
+
 expect_equal_to_reference(modDivF1a_an, "modDivF1a_an")
 
 set.seed(123)

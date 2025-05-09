@@ -1,6 +1,6 @@
-#' Print a summary of a wrda object
+#' Print a summary of a wrda or cca0 object
 #' 
-#' @param x a wrda object from \code{\link{wrda}}
+#' @param x an object from \code{\link{wrda}} or \code{\link{cca0}}
 #' @param ...  Other arguments passed to the function (currently ignored).
 #' 
 #' @returns No return value, results are printed to console.

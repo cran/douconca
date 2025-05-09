@@ -15,6 +15,8 @@
 #' returned by the function \code{\link[permute]{how}}, or the number of 
 #' permutations required (default 999) or a permutation matrix where each row 
 #' gives the permuted indices.
+#' @param rpp Logical indicating residual predictor permutation (default \code{TRUE}).
+#' When \code{FALSE}, residual response permutation is used.
 #' @param by character \code{"axis"} which sets the test statistic to the first
 #' eigenvalue of the dc-CA model. Default: \code{NULL} which set the test 
 #' statistic to the inertia (sum of all double constrained eigenvalues; named 
@@ -24,6 +26,17 @@
 #' explained by the environmental predictors (without covariates). The default 
 #' is quicker computationally as it avoids computation of an svd of permuted 
 #' data sets.
+#' @param n_axes number of axes used in the test statistic (default: \code{"all"}). 
+#' Example, the test statistic is the sum of the first two eigenvalues, 
+#' if \code{n_axes=2}. With a numeric \code{n_axes} 
+#' and model \code{~X + Condition(Z)}, the residuals of \code{X} 
+#' with respect to \code{Z} are permuted with a test statistic equal to
+#' the sum of the first \code{n_axes} eigenvalues of the fitted \code{Y}
+#' in the model \code{Y ~ X + Z}, with \code{Y} the response in the model.
+#' In the default \code{"all"}, the test statistic is all eigenvalues of the 
+#' model \code{Y ~ X|Z}, \emph{i.e.} the effects of \code{X} after adjustment
+#' for the effects on \code{Y} of \code{Z}.
+#' If \code{by = "axis"}, the setting of \code{n_axes} is ignored.
 #' 
 #' @details
 #' In \code{\link{anova_species}}, the first step extracts the species-niche 
@@ -58,8 +71,9 @@
 #' @export
 anova_species <- function(object, 
                           permutations = 999, 
+                          rpp = TRUE,
+                          n_axes = "all",
                           by = NULL) {
-  rpp <- TRUE
   if (is.null(object$SNCs_orthonormal_env) && is.null(object$data$Y)) {
     warning("Species level anova requires abundance data or ", 
             "species niche optima (SNCs).\n")
@@ -81,17 +95,7 @@ anova_species <- function(object,
          "or specified by permute::how().\n")
   }
   if (is.null(object$SNCs_orthonormal_env)) {
-    formulaEnv <- change_reponse(object$formulaEnv, "object$data$Y", 
-                                 object$data$dataEnv)
-    environment(formulaEnv) <- environment()
-    step1_sp <- vegan::cca(formulaEnv, data = object$data$dataEnv)
-    SNCs_orthonormal_env <- scores(step1_sp, display = "species", 
-                                   scaling = "species", 
-                                   choices = 1:rank_mod(step1_sp))
-    if (rownames(SNCs_orthonormal_env)[1]=="col1") {
-      rownames(SNCs_orthonormal_env) <- 
-        paste0("Species", seq_len(nrow(object$data$dataTraits)))
-    }
+    SNCs_orthonormal_env <- fSNC_ortho(object)
   } else {
     SNCs_orthonormal_env <- object$SNCs_orthonormal_env
   }
@@ -115,7 +119,7 @@ anova_species <- function(object,
   out_tes <- list()
   out_tes[[1]]  <- randperm(Yw, Xw, Zw, sWn = sWn, 
                             permutations = permutations, by = by,
-                            return = "all")
+                            n_axes = n_axes, return = "all")
   if (by == "axis") {
     while (out_tes[[1]]$rank > length(out_tes)) {
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)
@@ -125,7 +129,8 @@ anova_species <- function(object,
     }
   }
   f_species <- fanovatable(out_tes, Nobs = N, dfpartial = dfpartial, type= "col",
-                           calltext = c(object$call), perm_meth = perm_meth)  
+                           calltext = c(object$call), perm_meth = perm_meth,
+                           n_axes = out_tes[[1]]$n_axes)  
   result <- list(table = f_species, eigenvalues = attr(f_species, "eig"))
   return(result)
 }
@@ -141,7 +146,7 @@ anova_species <- function(object,
 #' @noRd
 #' @keywords internal
 dummysvd <- function(Y) {
-  list(d = 1,
+  list(d = rep(1, ncol(Y)),
        U = matrix(1, nrow = nrow(Y), ncol = 1),
        V = matrix(1, nrow = ncol(Y), ncol = 1))
 }
@@ -153,6 +158,7 @@ randperm_eX0sqrtw <- function(Y,
                               X, 
                               Z = matrix(1, nrow = nrow(Y), ncol = 1), 
                               by = NULL,
+                              n_axes = "all",
                               sWn = rep(1, nrow(Y)), 
                               permutations = permute::how(nperm = 999),
                               return = "pval") {
@@ -166,11 +172,20 @@ randperm_eX0sqrtw <- function(Y,
   #  except for calculating the original residual X given Z
   EPS <- sqrt(.Machine$double.eps) # for permutation P-values
   # preparations and data value
-  if (by =="axis") {
+  if (by == "axis" || is.numeric(n_axes)) {
     mysvd <- svd
+    if (by == "axis") {
+      n_axes <- "all"
+    }
+    if (is.numeric(n_axes)) {
+      if (is.null(attr(n_axes, which = "Names_initial_model"))) {
+        attr(n_axes, which = "Names_initial_model") <- "(Intercept)"
+      }
+    }
   } else {
     mysvd <- dummysvd
   }
+  n_axes1 <- if (!is.numeric(n_axes)) 1 else n_axes												   
   N <- nrow(Y)
   if (is.matrix(permutations)) {
     # matrix: check that it *strictly* integer
@@ -194,10 +209,19 @@ randperm_eX0sqrtw <- function(Y,
   # step 2: ss(X)
   Yfit_X <- qr.fitted(qr(eX), eY)
   ssX0 <- sum(Yfit_X ^ 2)
+  if (is.numeric(n_axes)) {
+    # add Yfit due to Z to Yfit_X to obtain Yfit_XZ
+    Yfit_Z <- qr.fitted(qrZ, Y)
+    # remove effect of intercept + original Condition variables in Z
+    Yfit_Z <- qr.resid(
+      qr(Z[, attr(n_axes, which = "Names_initial_model"), drop = FALSE]), Yfit_Z) 
+    Yfit_X <- Yfit_X + Yfit_Z
+  }
   svd_Yfit_X <- svd(Yfit_X)
-  ssX_eig1 <- svd_Yfit_X$d[1] ^ 2
   EigVector1 <- svd_Yfit_X$u[, 1, drop = FALSE]
   rank <- sum(svd_Yfit_X$d / sum(svd_Yfit_X$d) > 1.e-3)
+  n_axes1 <- min(n_axes1, rank)
+  ssX_eig1 <- sum(svd_Yfit_X$d[seq_len(n_axes1)]^2)				   
   sstot <- sum(eY ^ 2)
   p_eX <- qr(eX)$rank
   df_cor <- (nrow(eY)- qrZ$rank - p_eX) / p_eX  #(N-nz-nx-1)/nx
@@ -222,10 +246,15 @@ randperm_eX0sqrtw <- function(Y,
     #Yfit_permX <- unweighted_lm_pq_fit(eY,eX_perm_orth_to_Z) #
     Yfit_permX <- qr.fitted(qr(eX_perm_orth_to_Z), eY)
     ssX_perm[i] <- sum(Yfit_permX ^ 2)
-    ssX_eig1_perm[i] <- mysvd(Yfit_permX)$d[1]
+    if (is.numeric(n_axes)) {
+      # add Yfit due to Z to Yfit_X to obtain Yfit_XZ
+      Yfit_permX <- Yfit_permX + Yfit_Z
+      ssX_eig1_perm[i] <- sum(mysvd(Yfit_permX)$d[seq_len(n_axes1)]^2)
+    } else {
+      ssX_eig1_perm[i] <- mysvd(Yfit_permX)$d[1]^2
+    }
   }
-  ssX_eig1_perm <- ssX_eig1_perm ^ 2
-  if (by == "axis")  {
+  if (by == "axis" || is.numeric(n_axes)) {
     ssX_perm <- ssX_eig1_perm
     ssX0 <- ssX_eig1
     F0 <- F0_eig1
@@ -247,7 +276,7 @@ randperm_eX0sqrtw <- function(Y,
                 ss = c(Model = ssX0, Residual = sstot - ssX0),
                 df = c(Model = p_eX, Residual = nrow(eY) - qrZ$rank - p_eX),
                 rank = rank, R2.perm = ssX_perm / sstot,
-                eig1.perm = ssX_eig1_perm,
+                eig1.perm = ssX_eig1_perm, n_axes = n_axes,
                 eig = eig, EigVector1 = EigVector1)
     if (is.matrix(permutations)) {
       attr(perm.mat, "control") <- 
@@ -269,6 +298,7 @@ randperm_eY2 <- function(Y,
                          X, 
                          Z = matrix(1, nrow = nrow(Y), ncol = 1), 
                          by = NULL,
+                         n_axes = "all",
                          sWn = rep(1, nrow(Y)), 
                          permutations = permute::how(nperm = 999),
                          return = "pval") {
@@ -289,7 +319,7 @@ randperm_eY2 <- function(Y,
   # preparations and data value
   EPS <- sqrt(.Machine$double.eps) # for permutation P-values
   # preparations and data value
-  if (by == "axis") {
+  if (by == "axis" || is.numeric(n_axes)) {
     mysvd <- svd
   } else {
     mysvd <- dummysvd
@@ -463,7 +493,8 @@ fanovatable <- function(out_tes,
                         dfpartial, 
                         type = "dcCA", 
                         calltext, 
-                        perm_meth = "Residualized predictor permutation\n") {
+                        perm_meth = "Residualized predictor permutation\n",
+                        n_axes = "all") {
   if (type == "wrda") {
     methd <- "wRDA"
   } else if (type == "cca") {
@@ -493,6 +524,9 @@ fanovatable <- function(out_tes,
     }
   } else {   
     df <- out_tes[[length(out_tes)]]$df
+    if (is.numeric(n_axes)) {
+      df[1] <- min(n_axes, df[1])
+    }
     names(df) <- c(methd, "Residual")
   }
   p_val_axes1 <- c(cummax(sapply(out_tes, function(x) x$pval[1])), NA)
@@ -515,7 +549,6 @@ fanovatable <- function(out_tes,
   header <- paste0(txt,
                    object1,
                    perm_meth,
-                   "Residualized predictor permutation\n",
                    howHead(attr(out_tes[[1]], "control")))
   f_sites <- structure(axsig_dcCA_sites, heading = header, 
                        control = attr(out_tes[[1]], "control"),
@@ -524,6 +557,25 @@ fanovatable <- function(out_tes,
                        R2.perm = R2.perm,
                        eig1.perm = eig1.perm,
                        eig = eig,
+                       n_axes = n_axes,				   
                        class = c("anova.cca", "anova", "data.frame"))
   return(f_sites)
+}
+
+#' @noRd
+#' @keywords internal
+fSNC_ortho <- function(object) {
+  step1_sp <- cca0(formula = object$formulaEnv,
+                   response = object$data$Y,
+                   data = object$data$dataEnv, 
+                   cca_object = object$CCAonTraits,
+                   object4QR = object$RDAonEnv)
+  SNCs_orthonormal_env <- scores(step1_sp, display = "species", 
+                                 scaling = "species", 
+                                 choices = 1:rank_mod(step1_sp))
+  if (rownames(SNCs_orthonormal_env)[1]=="col1") {
+    rownames(SNCs_orthonormal_env) <- 
+      paste0("Species", seq_len(nrow(object$data$dataTraits)))
+  }
+  return(SNCs_orthonormal_env)
 }

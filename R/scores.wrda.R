@@ -1,4 +1,5 @@
-#' @title Extract results of a weighted redundancy analysis (wrda)
+#' @title Extract results of a weighted redundancy analysis (wrda) or a
+#' cca0 object. 
 #'
 #' @description
 #' This function works very much like the \code{vegan} 
@@ -7,7 +8,7 @@
 #' predictors. 
 #'
 #' @param x object of class \code{"wrda"}, \emph{i.e.} result of 
-#' \code{\link{wrda}}.
+#' \code{\link{wrda}} or \code{\link{cca0}}.
 #' @param choices integer vector of which axes to obtain. Default: all wrda
 #' axes.
 #' @param display a character vector, one or more of \code{c("all", "species",

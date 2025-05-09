@@ -11,16 +11,15 @@ fCWM_SNC(
   dataTraits = NULL,
   formulaEnv = NULL,
   formulaTraits = NULL,
-  divideBySiteTotals = TRUE,
-  dc_CA_object = NULL,
-  minimal_output = TRUE,
-  verbose = TRUE
+  divideBySiteTotals = NULL
 )
 }
 \arguments{
 \item{response}{matrix, data frame of the abundance data 
 (dimension \emph{n} x \emph{m}) or list with community weighted means (CWMs)
-from \code{\link{fCWM_SNC}}. See Details for analyses starting from community
+from \code{\link{fCWM_SNC}}, NULL. If \code{NULL}, the response should be
+at the left-hand side of \code{formulaEnv}. 
+See Details for analyses starting from community
 weighted means. Rownames of \code{response}, if any, are carried through.}
 
 \item{dataEnv}{matrix or data frame of the row predictors, with rows 
@@ -30,9 +29,9 @@ corresponding to those in \code{response}. (dimension \emph{n} x \emph{p}).}
 corresponding to the columns in \code{response}.
 (dimension \emph{m} x \emph{q}).}
 
-\item{formulaEnv}{formula or one-sided formula for the rows (samples) with 
-row predictors in \code{dataEnv}. When two-sided, the left hand side of 
-the formula is not used. Specify row covariates (if any ) by 
+\item{formulaEnv}{two-sided or one-sided formula for the rows (samples) with 
+row predictors in \code{dataEnv}. The left hand side of the formula is ignored if
+it is specified in the \code{response} argument. Specify row covariates (if any) by
 adding \code{+ Condition(covariate-formula)} to \code{formulaEnv} as 
 in \code{\link[vegan]{rda}}. The \code{covariate-formula} should not contain 
 a \code{~} (tilde). Default: \code{NULL} for \code{~.}, i.e. all variables 
@@ -47,26 +46,18 @@ a \code{~} (tilde). Default: \code{NULL} for \code{~.}, i.e. all variables
 in \code{dataTraits} are predictor traits.}
 
 \item{divideBySiteTotals}{logical; default \code{TRUE} for closing the 
-data by dividing the rows in the \code{response} by their total.}
-
-\item{dc_CA_object}{optional object from an earlier run of this function. 
-Useful if the same formula for the columns (\code{formulaTraits}), 
-\code{dataTraits} and \code{response} are used with a new formula for the 
-rows. If set, the data of the previous run is used and the result of its 
-first step is taken for the new analysis.}
-
-\item{minimal_output}{logical. Default \code{TRUE} for use of the return 
-value as \code{response} in a call to \code{\link{dc_CA}}.}
-
-\item{verbose}{logical for printing a simple summary (default: TRUE)}
+data by dividing the rows in the \code{response} by their total.
+However, the default is \code{FALSE}, when the species totals are 
+proportional to \code{N2*(N-N2)} with  
+\code{N2} the Hill numbers of order 2 of the species 
+and \code{N} the number of sites,
+as indicator that the response data have been pre-processed to
+\code{N2}-based marginals using \code{\link{ipf2N2}}.}
 }
 \value{
-The default returns a list of CWM, SNC, weights, \code{formulaTraits} and
+The default returns a list of CWM, SNC, weights, \code{formulaTraits},
 inertia (weighted variance explained by the traits and by the environmental
-variables) a list of data with elements \code{dataEnv} and \code{dataTraits}. 
-When  \code{minimal_output = FALSE}, some more statistics are given that are 
-mainly technical or recomputed when the return value is used as 
-\code{response} in a call to \code{\link{dc_CA}}.
+variables) and a list of data with elements \code{dataEnv} and \code{dataTraits}.
 }
 \description{
 Double constrained correspondence analysis (dc-CA) can be calculated directly 

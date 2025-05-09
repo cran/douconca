@@ -169,13 +169,13 @@ expect_equal_to_reference(modq11_predDivTtraits, "modq11_predDivTtraits")
 
 # check how douconca manages collinear models A
 envir$Sites <- factor(dune_trait_env$envir$Sites)
-mod_dccaFF <- dc_CA(formulaEnv = ~ Sites,
+expect_stdout(mod_dccaFF <- dc_CA(formulaEnv = ~ Sites,
                     formulaTraits = ~ Species,
                     response = dune_trait_env$comm[, -1],  # must delete "Sites"
                     dataEnv = envir,
                     dataTraits = traits,
                     divideBySiteTotals = divide,
-                    verbose = FALSE)
+                    verbose = FALSE))
 
 Yfit <- fitted(mod_dccaFF, type = "response")
 
@@ -203,13 +203,13 @@ expect_equal(beta, rep(1, length(beta)))
 # CWM perfect fit
 
 envir$Sites <- factor(dune_trait_env$envir$Sites)
-mod_dccaCWM <- dc_CA(formulaEnv = ~ Sites,
+expect_stdout(mod_dccaCWM <- dc_CA(formulaEnv = ~ Sites,
                      formulaTraits = ~ F + R + N + L,
                      response = dune_trait_env$comm[, -1],  # must delete "Sites"
                      dataEnv = envir,
                      dataTraits = traits,
                      divideBySiteTotals = divide,
-                     verbose = FALSE)
+                     verbose = FALSE))
 
 expect_equal(mod_dccaCWM$inertia["traits_explain", 1], 
              mod_dccaCWM$inertia["constraintsTE", 1])
@@ -221,8 +221,7 @@ CWMSNC <- fCWM_SNC(formulaEnv = ~ Sites,
                    response = dune_trait_env$comm[, -1],  # must delete "Sites"
                    dataEnv = envir,
                    dataTraits = traits,
-                   divideBySiteTotals = divide,
-                   verbose = FALSE)
+                   divideBySiteTotals = divide)
 
 CWMfit <- fitted(mod_dccaCWM, type = "CWM")
 expect_equivalent(CWMfit, CWMSNC$CWM)# full rank fit!
@@ -247,8 +246,7 @@ CWMSNCb <- fCWM_SNC(formulaEnv = ~ Moist + Mag,
                     response = dune_trait_env$comm[, -1],  # must delete "Sites"
                     dataEnv = envir,
                     dataTraits = traits,
-                    divideBySiteTotals = divide,
-                    verbose = FALSE)
+                    divideBySiteTotals = divide)
 
 SNCfit <- fitted(mod_dccaSNC, type = "SNC")
 expect_equivalent(SNCfit[,-2], CWMSNCb$SNC) # Passed Without the factor sqrt(28)!
@@ -266,15 +264,14 @@ mod_DivT_dccaA1 <- dc_CA(formulaEnv = ~ A1 + Manure + Moist,
                          dataTraits = traits,
                          divideBySiteTotals = divide,
                          verbose = FALSE)
-expect_stdout( mod_DivT_dccaA11 <- 
-                 dc_CA(formulaEnv = ~ A1 + A11 + Manure + Moist,
-                       formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
-                       response = Y, 
-                       dataEnv = envir,
-                       dataTraits = traits,
-                       divideBySiteTotals = divide,
-                       verbose = FALSE))
-
+mod_DivT_dccaA11 <- 
+    dc_CA(formulaEnv = ~ A1 + A11 + Manure + Moist,
+          formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
+          response = Y, 
+          dataEnv = envir,
+          dataTraits = traits,
+          divideBySiteTotals = divide,
+          verbose = FALSE)
 expect_equal(predict(mod_DivT_dccaA1, type = "response"),
              predict(mod_DivT_dccaA11, type = "response"))
 
@@ -287,15 +284,13 @@ mod_DivT_dccaSLA <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
                           dataTraits = traits,
                           divideBySiteTotals = divide,
                           verbose = FALSE)
-
-expect_message(
-  mod_DivT_dccaSLA11 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
-                              formulaTraits = ~ SLA + SLA11 + Height + LDMC + Seedmass + Lifespan,
+expect_warning(mod_DivT_dccaSLA11 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
+                              formulaTraits = ~ SLA + SLA11+ Height + LDMC + Seedmass + Lifespan,
                               response = Y, 
                               dataEnv = envir,
                               dataTraits = traits,
                               divideBySiteTotals = divide,
-                              verbose = FALSE))
+                              verbose = FALSE),"Collinearity detected in CWM-model")
 
 expect_equal(predict(mod_DivT_dccaSLA, type = "response"),
              predict(mod_DivT_dccaSLA11, type = "response"))

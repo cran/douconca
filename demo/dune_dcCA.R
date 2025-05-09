@@ -2,10 +2,9 @@ data("dune_trait_env")
 
 # rownames are carried forward in results
 rownames(dune_trait_env$comm) <- dune_trait_env$comm$Sites
-
-mod <- dc_CA(formulaEnv = ~A1 + Moist + Mag + Use + Manure,
+abun <- dune_trait_env$comm[, -1]  # must delete "Sites"
+mod <- dc_CA(formulaEnv = abun ~ A1 + Moist + Mag + Use + Manure,
              formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
-             response = dune_trait_env$comm[, -1],  # must delete "Sites"
              dataEnv = dune_trait_env$envir,
              dataTraits = dune_trait_env$traits,
 			 verbose = FALSE)
@@ -28,28 +27,26 @@ cat("\nThe levels of the tidy scores\n")
 print(levels(mod_scores_tidy$score))
 
 cat("\nFor illustration: a dc-CA model with a trait covariate\n")
-mod2 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
+mod2 <- dc_CA(formulaEnv = abun ~ A1 + Moist + Mag + Use + Manure,
               formulaTraits = ~ SLA + Height + LDMC + Lifespan + Condition(Seedmass),
-              response = dune_trait_env$comm[, -1],  # must delete "Sites"
               dataEnv = dune_trait_env$envir,
               dataTraits = dune_trait_env$traits)
 
 cat("\nFor illustration: a dc-CA model with both environmental and trait covariates\n")
-mod3 <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
+mod3 <- dc_CA(formulaEnv = abun ~ A1 + Moist + Use + Manure + Condition(Mag),
               formulaTraits = ~ SLA + Height + LDMC + Lifespan + Condition(Seedmass),
-              response = dune_trait_env$comm[, -1],  # must delete "Sites"
               dataEnv = dune_trait_env$envir,
               dataTraits = dune_trait_env$traits, 
 			  verbose = FALSE)
 
 cat("\nFor illustration: same model but using dc_CA_object = mod2 for speed, ", 
     "as the trait model and data did not change\n")
-mod3B <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
+mod3B <- dc_CA(formulaEnv = abun ~ A1 + Moist + Use + Manure + Condition(Mag),
                dataEnv = dune_trait_env$envir,
                dc_CA_object = mod2, 
 			   verbose= FALSE)
 cat("\ncheck on equality of mod3 (from data) and mod3B (from a dc_CA_object)\n",
     "the expected difference is in the component 'call'\n ")
-print(all.equal(mod3, mod3B)) #  only the component call differs
 
-
+print(all.equal(mod3[-c(5,12)], mod3B[-c(5,12)])) #  only the component call differs
+print(mod3$inertia[-c(3,5),]/mod3B$inertia) #        and mod3 has two more inertia items

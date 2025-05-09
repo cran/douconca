@@ -93,10 +93,11 @@ set_newdata <- function(object,
                         type,
                         means_mis) {
   # where check_newdata gives environmental data and trait data respectively
-  if (type %in%  c("traitsFromEnv", "CWM")) {
-    ff_get <- get_Z_X_XZ_formula(object$formulaEnv, object$data$dataEnv)
-    trainingData <- object$data$dataEnv
-  } else if (type %in% c("envFromTraits", "SNC")) { 
+  if (type %in%  c("traitsFromEnv", "CWM", "lc")) {
+    dataEnv <- if (inherits(object,"wrda")) object$data else object$data$dataEnv
+    ff_get <- get_Z_X_XZ_formula(object$formulaEnv, dataEnv)
+    trainingData <- dataEnv
+  } else if (type %in% c("envFromTraits", "SNC", "lc_traits")) { 
     ff_get <- get_Z_X_XZ_formula(object$formulaTraits, object$data$dataTraits)
     trainingData <- object$data$dataTraits
   } else {
@@ -175,6 +176,28 @@ predict_response <- function(object,
   pred_scaled_sites <- subtract_mean(newdata2, mean0 = sc[["regression"]][, "Avg"])
   pred_scaled_sites <- pred_scaled_sites %*% B_env_regr
   interact <- pred_scaled_sites %*% t(pred_scaled_species)
+  pred <- (1 + interact) * 
+    (rep(1, nrow(interact)) %*% t(weights[[1]] / sum(weights[[1]]))) * weights[[2]]
+  return(pred)
+}
+
+#' @noRd
+#' @keywords internal
+predict_response_wrda <- function(object,
+                                  newdata1,
+                                  rank,
+                                  weights = object$weights) {
+  # newdata1 must be a list two dataframes, element 1: trait and  element 2 env data
+  sc <- scores_dcca(object, choices = seq_len(rank), 
+                    display = c("reg", "species"), scaling = "sym",
+                    normed = FALSE)
+  B_env_regr <- sc[["regression"]][, -c(1, 2, 3), drop = FALSE]
+  B_env_regr[is.na(B_env_regr)] <- 0
+  newdata2 <- set_newdata(object, newdata1, type = "lc", 
+                          means_mis = sc[["regression"]][, "Avg"])
+  pred_scaled_sites <- subtract_mean(newdata2, mean0 = sc[["regression"]][, "Avg"])
+  pred_scaled_sites <- pred_scaled_sites %*% B_env_regr  
+  interact <- pred_scaled_sites %*% t(sc[["species"]])
   pred <- (1 + interact) * 
     (rep(1, nrow(interact)) %*% t(weights[[1]] / sum(weights[[1]]))) * weights[[2]]
   return(pred)

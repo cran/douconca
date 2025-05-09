@@ -75,6 +75,11 @@ plot_dcCA_CWM_SNC <- function(x,
   }
   # plot
   namaxis <- paste0("dcCA", axis)
+  id <- which(is.na(scorepair$groups))
+  if (length(id)) {
+    scorepair <- scorepair[-id, , drop = FALSE]
+    scorepair$groups <- factor(scorepair$groups)
+  }
   p <- ggplot2::ggplot(data = scorepair, 
                        ggplot2::aes(x = .data[[namaxis]], 
                                     y = .data[["CWM-SNC"]],

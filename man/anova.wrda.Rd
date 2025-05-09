@@ -4,7 +4,13 @@
 \alias{anova.wrda}
 \title{Permutation Test for weighted redundancy analysis}
 \usage{
-\method{anova}{wrda}(object, ..., permutations = 999, by = c("omnibus", "axis"))
+\method{anova}{wrda}(
+  object,
+  ...,
+  permutations = 999,
+  by = c("omnibus", "axis"),
+  n_axes = "all"
+)
 }
 \arguments{
 \item{object}{an object from \code{\link{dc_CA}}.}
@@ -21,6 +27,18 @@ first eigenvalue of the RDA model. Default: \code{NULL} which sets the test
 statistic to the weighted variance fitted by the predictors
 (=sum of all constrained eigenvalues). The default is quicker 
 computationally as it avoids computation of an svd of permuted data sets.}
+
+\item{n_axes}{number of axes used in the test statistic (default: \code{"all"}). 
+Example, the test statistic is the sum of the first two eigenvalues, 
+if \code{n_axes=2}. With a numeric \code{n_axes} 
+and model \code{~X + Condition(Z)}, the residuals of \code{X} 
+with respect to \code{Z} are permuted with a test statistic equal to
+the sum of the first \code{n_axes} eigenvalues of the fitted \code{Y}
+in the model \code{Y ~ X + Z}, with \code{Y} the response in the model.
+In the default \code{"all"}, the test statistic is all eigenvalues of the 
+model \code{Y ~ X|Z}, \emph{i.e.} the effects of \code{X} after adjustment
+for the effects on \code{Y} of \code{Z}.
+If \code{by = "axis"}, the setting of \code{n_axes} is ignored.}
 }
 \value{
 A list with two elements with names \code{table} and \code{eigenvalues}.
@@ -49,8 +67,7 @@ w <- rep(1, 20)
 w[1:10] <- 8 
 w[17:20] <- 0.5
 
-object <- wrda(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
-               response = response, 
+object <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure),
                data = dune_trait_env$envir, 
                weights = w)
 object # Proportions equal to those Canoco 5.15

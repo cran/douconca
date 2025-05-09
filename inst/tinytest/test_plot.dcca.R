@@ -66,3 +66,23 @@ mod_fact2 <- dc_CA(formulaEnv = ~ fUse + Mag,
 
 pp2 <- plot(mod_fact2)
 pp2b <- plot(mod_fact2, envfactor = "Mag", traitfactor = "fSLA")
+envir$fUse
+mod2 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Condition(fUse*Manure),
+              formulaTraits = ~ SLA + Height + LDMC + Condition(Seedmass * Lifespan),
+              response = Y,
+              dataEnv = envir,
+              dataTraits = traits,
+              verbose = FALSE)
+
+plotDat2 <- getPlotdata(mod2)
+
+p <- list(
+  newnames = list(traits= c("SLA", "Height", "LDMC"),
+                  env = c("A1", "Moist", "MagSF", "MagBF", "MagHF", "MagNM")),
+  weightnames = list(traits = c("SLA", "Height", "LDMC"),  
+                     env = c("A1", "Moist", "MagBF", "MagHF", "MagNM")),
+  centroidnames = list(traits = character(0), 
+                       env = c("MagSF", "MagBF", "MagHF", "MagNM"))
+)
+
+expect_equal(plotDat2$oldNameList, p)

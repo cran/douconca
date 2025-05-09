@@ -91,8 +91,8 @@ plot_species_scores_bk <- function(species_scores,
                         selectcrit = selectcrit, species_groups = species_groups)
   speciesSub <- subset(species, abs(selectcrit) > threshold)
   speciesSub <- speciesSub[order(speciesSub$scores), ]
-  ymin <- min(species$scores) * 1.1
-  ymax <- max(species$scores) * 1.1
+  ymin <- min(species$scores, na.rm = TRUE) * 1.1
+  ymax <- max(species$scores, na.rm = TRUE) * 1.1
   fbreaks <- function(ymax, yInterval) {
     yInterval <- abs(yInterval)
     if (ymax > 0) {

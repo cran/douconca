@@ -2,8 +2,8 @@ Package: douconca
 Type: Package
 Title: Double Constrained Correspondence Analysis for Trait-Environment
         Analysis in Ecology
-Version: 1.2.2
-Date: 2024-12-02
+Version: 1.2.3
+Date: 2025-05-09
 Authors@R: c(person(given = "Cajo J.F", 
                     family = "ter Braak", 
                     email = "cajo.terbraak@wur.nl",
@@ -32,6 +32,7 @@ Description: Double constrained correspondence analysis (dc-CA) analyzes
    vegan::rda() if the site weights are equal. This version has a predict() 
    function. For details see ter Braak et al. 2018 
    <doi:10.1007/s10651-017-0395-x>.
+   and ter Braak & van Rossum 2025 <doi:10.1016/j.ecoinf.2025.103143>.
 Depends: R (>= 3.6.0)
 License: GPL-3
 Encoding: UTF-8
@@ -45,10 +46,11 @@ VignetteBuilder: knitr
 URL: https://zenodo.org/records/13970152,
         https://github.com/Biometris/douconca
 BugReports: https://github.com/Biometris/douconca/issues
-Packaged: 2024-12-02 12:40:10 UTC; rossu027
-Author: Cajo J.F ter Braak [aut] (<https://orcid.org/0000-0002-0414-8745>),
-  Bart-Jan van Rossum [aut, cre]
-    (<https://orcid.org/0000-0002-8673-2514>)
+Packaged: 2025-05-09 09:53:04 UTC; rossu027
+Author: Cajo J.F ter Braak [aut] (ORCID:
+    <https://orcid.org/0000-0002-0414-8745>),
+  Bart-Jan van Rossum [aut, cre] (ORCID:
+    <https://orcid.org/0000-0002-8673-2514>)
 Maintainer: Bart-Jan van Rossum <bart-jan.vanrossum@wur.nl>
 Repository: CRAN
-Date/Publication: 2024-12-02 13:10:03 UTC
+Date/Publication: 2025-05-09 12:40:01 UTC

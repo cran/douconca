@@ -4,9 +4,12 @@ dune_plot_dcCA2	  Demo of plotting a single dc-CA axis (long version)
 plot_CWM_SNC      Demo of plotting CWMs and SNCs of a dc-CA axis against the axis
 dune_plot_gd      Demo of plotting the gradient description
 dune_select  	  Demo of how dc_CA_vegan can be used for manual forward selection of environmental variables
+dune_forward_slct Demo of forward selection of traits and environmental variables in dc-CA
 dune_test	  Demo of the max test in dc-CA combining the community-level and the species-level test
 dune_wrda	  Demo of weighted redundancy analysis
+dune_cca0	  Demo of canonical correspondence analysis via cca0 
 dune_fCWMSNC      Demo of dc-CA obtained from communitiy weighted means and, optionally, species-niche centroids
 dune_dcCA_predict Demo of prediction in dc-CA
 dune_dcCA_fitted  Demo of fits (CWM, SNC, abundance) in dc-CA
 dune_dcCA_coef    Demo of coefficients (incl. fourth-corner) in dc-CA
+dune_ipf2N2     Demo of transformation of an abundance matrix to one with Hill N2-marginals

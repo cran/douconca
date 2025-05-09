@@ -10,15 +10,17 @@ dc_CA(
   response = NULL,
   dataEnv = NULL,
   dataTraits = NULL,
-  divideBySiteTotals = TRUE,
+  divideBySiteTotals = NULL,
   dc_CA_object = NULL,
+  env_explain = TRUE,
+  use_vegan_cca = FALSE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{formulaEnv}{formula or one-sided formula for the rows (samples) with 
-row predictors in \code{dataEnv}. When two-sided, the left hand side of 
-the formula is not used. Specify row covariates (if any ) by 
+\item{formulaEnv}{two-sided or one-sided formula for the rows (samples) with 
+row predictors in \code{dataEnv}. The left hand side of the formula is ignored if
+it is specified in the \code{response} argument. Specify row covariates (if any) by
 adding \code{+ Condition(covariate-formula)} to \code{formulaEnv} as 
 in \code{\link[vegan]{rda}}. The \code{covariate-formula} should not contain 
 a \code{~} (tilde). Default: \code{NULL} for \code{~.}, i.e. all variables 
@@ -34,7 +36,9 @@ in \code{dataTraits} are predictor traits.}
 
 \item{response}{matrix, data frame of the abundance data 
 (dimension \emph{n} x \emph{m}) or list with community weighted means (CWMs)
-from \code{\link{fCWM_SNC}}. See Details for analyses starting from community
+from \code{\link{fCWM_SNC}}, NULL. If \code{NULL}, the response should be
+at the left-hand side of \code{formulaEnv}. 
+See Details for analyses starting from community
 weighted means. Rownames of \code{response}, if any, are carried through.}
 
 \item{dataEnv}{matrix or data frame of the row predictors, with rows 
@@ -45,13 +49,27 @@ corresponding to the columns in \code{response}.
 (dimension \emph{m} x \emph{q}).}
 
 \item{divideBySiteTotals}{logical; default \code{TRUE} for closing the 
-data by dividing the rows in the \code{response} by their total.}
+data by dividing the rows in the \code{response} by their total.
+However, the default is \code{FALSE}, when the species totals are 
+proportional to \code{N2*(N-N2)} with  
+\code{N2} the Hill numbers of order 2 of the species 
+and \code{N} the number of sites,
+as indicator that the response data have been pre-processed to
+\code{N2}-based marginals using \code{\link{ipf2N2}}.}
 
 \item{dc_CA_object}{optional object from an earlier run of this function. 
 Useful if the same formula for the columns (\code{formulaTraits}), 
 \code{dataTraits} and \code{response} are used with a new formula for the 
 rows. If set, the data of the previous run is used and the result of its 
-first step is taken for the new analysis.}
+first step is taken for the new analysis and \code{env_explain} is set 
+to \code{FALSE}.}
+
+\item{env_explain}{logical (default \code{TRUE})
+for calculation of the inertia explained 
+by the environmental variable (based on a CCA of abundance 
+(with \code{divideBySiteTotals}, if true) on the environmental formula).}
+
+\item{use_vegan_cca}{default \code{TRUE}.}
 
 \item{verbose}{logical for printing a simple summary (default: TRUE)}
 }
@@ -161,7 +179,7 @@ communities. The function \code{dc_CA} has an option to divide the abundance
 data of a site by the site total, giving equal site weights. This division 
 has the advantage that the multivariate analysis corresponds with an 
 unweighted (multi-trait) community-level analysis, instead of being weighted
-(Kleyer et al. 2012).
+(Kleyer et al. 2012, ter Braak and van Rossum, 2025).
 }
 \details{
 Empty (all zero) rows and columns in \code{response} are removed from the 
@@ -208,10 +226,9 @@ data("dune_trait_env")
 
 # rownames are carried forward in results
 rownames(dune_trait_env$comm) <- dune_trait_env$comm$Sites
-
-mod <- dc_CA(formulaEnv = ~A1 + Moist + Mag + Use + Manure,
+abun <- dune_trait_env$comm[, -1]  # must delete "Sites"
+mod <- dc_CA(formulaEnv = abun ~ A1 + Moist + Mag + Use + Manure,
              formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
-             response = dune_trait_env$comm[, -1],  # must delete "Sites"
              dataEnv = dune_trait_env$envir,
              dataTraits = dune_trait_env$traits,
 			 verbose = FALSE)
@@ -234,31 +251,29 @@ cat("\nThe levels of the tidy scores\n")
 print(levels(mod_scores_tidy$score))
 
 cat("\nFor illustration: a dc-CA model with a trait covariate\n")
-mod2 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
+mod2 <- dc_CA(formulaEnv = abun ~ A1 + Moist + Mag + Use + Manure,
               formulaTraits = ~ SLA + Height + LDMC + Lifespan + Condition(Seedmass),
-              response = dune_trait_env$comm[, -1],  # must delete "Sites"
               dataEnv = dune_trait_env$envir,
               dataTraits = dune_trait_env$traits)
 
 cat("\nFor illustration: a dc-CA model with both environmental and trait covariates\n")
-mod3 <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
+mod3 <- dc_CA(formulaEnv = abun ~ A1 + Moist + Use + Manure + Condition(Mag),
               formulaTraits = ~ SLA + Height + LDMC + Lifespan + Condition(Seedmass),
-              response = dune_trait_env$comm[, -1],  # must delete "Sites"
               dataEnv = dune_trait_env$envir,
               dataTraits = dune_trait_env$traits, 
 			  verbose = FALSE)
 
 cat("\nFor illustration: same model but using dc_CA_object = mod2 for speed, ", 
     "as the trait model and data did not change\n")
-mod3B <- dc_CA(formulaEnv = ~A1 + Moist + Use + Manure + Condition(Mag),
+mod3B <- dc_CA(formulaEnv = abun ~ A1 + Moist + Use + Manure + Condition(Mag),
                dataEnv = dune_trait_env$envir,
                dc_CA_object = mod2, 
 			   verbose= FALSE)
 cat("\ncheck on equality of mod3 (from data) and mod3B (from a dc_CA_object)\n",
     "the expected difference is in the component 'call'\n ")
-print(all.equal(mod3, mod3B)) #  only the component call differs
 
-
+print(all.equal(mod3[-c(5,12)], mod3B[-c(5,12)])) #  only the component call differs
+print(mod3$inertia[-c(3,5),]/mod3B$inertia) #        and mod3 has two more inertia items
 }
 \references{
 Kleyer, M., Dray, S., Bello, F., Lepš, J., Pakeman, R.J., Strauss, B., Thuiller,
@@ -267,7 +282,7 @@ environmental gradients: which multivariate methods?
 Journal of Vegetation Science, 23, 805-821.
 \doi{10.1111/j.1654-1103.2012.01402.x}
 
-ter Braak, CJF, Šmilauer P, and Dray S. 2018. Algorithms and biplots for
+ter Braak, CJF, Šmilauer P, and Dray S. (2018). Algorithms and biplots for
 double constrained correspondence analysis.
 Environmental and Ecological Statistics, 25(2), 171-197.
 \doi{10.1007/s10651-017-0395-x}
@@ -276,7 +291,13 @@ ter Braak C.J.F. and  P. Šmilauer  (2018). Canoco reference manual
 and user's guide: software for ordination (version 5.1x).
 Microcomputer Power, Ithaca, USA, 536 pp.
 
-Oksanen, J., et al. (2024)
+ter  Braak, C.J.F. and van Rossum, B. (2025).
+Linking Multivariate Trait Variation to the Environment: 
+Advantages of Double Constrained Correspondence Analysis 
+with the R Package Douconca. Ecological Informatics, 88.
+\doi{10.1016/j.ecoinf.2025.103143}
+
+Oksanen, J., et al. (2024).
 vegan: Community Ecology Package. R package version 2.6-6.1.
 \url{https://CRAN.R-project.org/package=vegan}.
 }

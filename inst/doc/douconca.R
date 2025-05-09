@@ -29,7 +29,7 @@ mod <- dc_CA(formulaEnv = ~ A1 + Moist + Use + Manure + Mag,
 mod$eigenvalues
 
 ## ----fig.width=7--------------------------------------------------------------
-plot(mod,gradient_description = "t")
+plot(mod, gradient_description = "t")
 
 ## -----------------------------------------------------------------------------
 set.seed(1)
@@ -50,8 +50,8 @@ round(sqrt(mod_e$eigenvalues[1]), 2)
 
 ## -----------------------------------------------------------------------------
 mod_mGe <-  dc_CA(formulaEnv = ~ A1 + Moist + Manure + Use + Mag,
-                 formulaTraits = 
-                   ~ SLA + Height + LDMC + Seedmass + Lifespan + Condition(F+R+N+L),
+                 formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan +
+                   Condition(F + R + N + L),
                  response = Y,
                  dataEnv = dune_trait_env$envir,
                  dataTraits = dune_trait_env$traits, verbose = FALSE)
@@ -67,10 +67,10 @@ anova(mod_LDMC)
 
 ## -----------------------------------------------------------------------------
 CWMSNC_LDMC <- fCWM_SNC(formulaEnv = ~ A1 + Moist + Manure + Use + Mag,
-                      formulaTraits = ~ LDMC,
-                      response = Y, 
-                      dataEnv = dune_trait_env$envir,
-                      dataTraits = dune_trait_env$trait, verbose = FALSE)
+                        formulaTraits = ~ LDMC,
+                        response = Y, 
+                        dataEnv = dune_trait_env$envir,
+                        dataTraits = dune_trait_env$trait)
 
 ## -----------------------------------------------------------------------------
 envCWM <- cbind(dune_trait_env$envir, CWMSNC_LDMC$CWM)

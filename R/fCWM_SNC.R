@@ -15,10 +15,6 @@
 #' data as \code{response}, at least up to sign changes of the axes.
 #'
 #' @inheritParams dc_CA
-#' 
-#' @param minimal_output logical. Default \code{TRUE} for use of the return 
-#' value as \code{response} in a call to \code{\link{dc_CA}}.
-#' @param verbose logical for printing a simple summary (default: TRUE)
 #
 #' @details
 #' The argument \code{formulaTraits} determines which CWMs are calculated.
@@ -43,12 +39,9 @@
 #' when the \code{\link{scores}} function is applied.
 #'
 #' @returns
-#' The default returns a list of CWM, SNC, weights, \code{formulaTraits} and
+#' The default returns a list of CWM, SNC, weights, \code{formulaTraits},
 #' inertia (weighted variance explained by the traits and by the environmental
-#' variables) a list of data with elements \code{dataEnv} and \code{dataTraits}. 
-#' When  \code{minimal_output = FALSE}, some more statistics are given that are 
-#' mainly technical or recomputed when the return value is used as 
-#' \code{response} in a call to \code{\link{dc_CA}}.
+#' variables) and a list of data with elements \code{dataEnv} and \code{dataTraits}. 
 #'
 #' @references
 #' Kleyer, M., Dray, S., Bello, F., Lepš, J., Pakeman, R.J., Strauss, 
@@ -81,33 +74,40 @@ fCWM_SNC <- function(response = NULL,
                      dataTraits = NULL,
                      formulaEnv = NULL,
                      formulaTraits = NULL,
-                     divideBySiteTotals = TRUE,
-                     dc_CA_object = NULL,
-                     minimal_output = TRUE,
-                     verbose = TRUE) {
+                     divideBySiteTotals = NULL) {
   # response matrix or data frame, dataEnv and dataTraits data frames in which 
   # formualaE and formulaT are evaluated
-  # dc_CA_object = result (value) of a previous run, can be used to save 
-  # computing time for runs that modify the formula for samples 
-  # (step2: RDAonEnv) only
-  # The step1 (CCAonTraits and the data and formulaTraits) are taken from 
-  # dc_CA_object into the new result.
   # If set, formulaTraits, response, dataEnv, dataTraits are not used at all 
   # and have no efffect on the result
   call <- match.call()
+  if (is.null(response)){
+    response <- get_response(formulaEnv)
+  }
   out <- check_data_dc_CA(formulaEnv, formulaTraits, response, dataEnv, 
                           dataTraits, divideBySiteTotals, call)
   # CWM and CWM ortho
   ms <- try(f_wmean(out$formulaTraits, tY = out$data$Y, out$data$dataTraits,
-                    weights=out$weights, name= "CWM"))
+                    weights=out$weights, name = "CWM"))
   if (inherits(ms, "try-error")) {
-    stop("singular trait data. No CWMs generated.\n")    
+    message("Trait constraints or CWMs are constant,", 
+            "no dc-CA analysis possible.\n",
+            "Inspect return value$CWM for issues.\n")
+    ms <- f_wmean(out$formulaTraits, tY = out$data$Y, out$data$dataTraits,
+                  weights = out$weights, name = "CWM", SNConly = TRUE)
+    out$CWM <- ms
+    return(out)
   }
   # SNC and SNC ortho
   mt <- try(f_wmean(out$formulaEnv, tY = t(out$data$Y), out$data$dataEnv,
-                    weights=out$weights, name= "SNC"))
+                    weights=out$weights, name = "SNC"))
   if (inherits(mt, "try-error")) {
-    stop("singular environment data. No SNCs generated\n")   
+    message("Environmental constraints or SNCs are constant,", 
+            "no dc-CA analysis possible.\n",
+            "Inspect return value$SNC for issues.\n")
+    out$SNC <- f_wmean(formulaEnv = out$formulaEnv, tY = t(out$data$Y),
+                       out$data$dataEnv, weights = out$weights, 
+                       name = "SNC", SNConly = TRUE)
+    return(out)
   } 
   out <- list(
     CWM = ms$wmean,
@@ -119,27 +119,18 @@ fCWM_SNC <- function(response = NULL,
     call = out$call, 
     data = out$data[-1] # remove Y from out$data
   )
-  if (!minimal_output) { 
-    out <- c(out, list( 
-      CWMs_orthonormal_traits = ms$wmean_ortho,
-      SNCs_orthonormal_env = mt$wmean_ortho,
-      trans2ortho = list(CWM2CWM_ortho = ms$to_ortho, 
-                         SNC2SNC_ortho = mt$to_ortho),
-      T_ortho = ms$to_ortho,
-      E_ortho = mt$to_ortho
-    ))
-  }
   return(out)
 }
 
 #' @noRd
 #' @keywords internal
-f_canonical_coef_traits2 <- function(out){
+f_canonical_coef_traits2 <- function(out, 
+                                     XZ = TRUE) {
   # do first the trivia of mean, sds and VIF
   # analogously  to calculate_b_se_tval in f_dc_CA.r
   XZ <- is.null(out$CWM2CWM_ortho)
   ms <- msdvif(formula = out$formulaTraits, data = out$data$dataTraits, 
-               weights = out$weights$columns, XZ = XZ)
+               weights = out$weights$columns, XZ = XZ, object4QR = out$CCAonTraits)
   avg <- ms$meansdvif[, 1]
   sds <- ms$meansdvif[, 2]
   VIF <- ms$meansdvif[, 3]
@@ -147,7 +138,7 @@ f_canonical_coef_traits2 <- function(out){
   if (!is.null(out$CWM2CWM_ortho)) {
     B1_traitsN <- out$CWM2CWM_ortho * sds
   } else {
-    if (inherits(out$CCAonTraits, "cca")) {
+    if (inherits(out$CCAonTraits, c("cca", "cca0"))) {
       B1_traitsN <- scores(out$CCAonTraits, display = "reg", 
                            scaling = "species", 
                            choices = 1:rank_mod(out$CCAonTraits))
@@ -163,8 +154,8 @@ f_canonical_coef_traits2 <- function(out){
                      scaling = "sites", choices = 1:rank_mod(out$RDAonEnv), 
                      const = 1)
   }
-  # End appendix 6.2 in ter Braak  et al 2018
-  c_traitsN <- B1_traitsN %*% B_star
+  # End appendix 6.2 in ter Braak et al 2018
+  c_traitsN <- B1_traitsN[,rownames(B_star), drop = FALSE] %*% B_star
   colnames(c_traitsN) <- paste0("Regr", seq_len(ncol(c_traitsN)))
   coef_normed <- cbind(Avg = avg, SDS = sds, VIF = VIF, c_traitsN, tval1 = NA)
   if (is.na(avg[1])) {
@@ -369,27 +360,27 @@ f_wmean <- function(formulaEnv,
                     tY, 
                     dataEnv, 
                     weights, 
-                    name = "SNC") {
+                    name = "SNC",
+                    SNConly = FALSE) {
   # SNC and SNC ortho or 
   # CWM and CWM ortho if name = "CwM" from formulaTraits, Y and dataTraits
   tot <- sum(tY)
-  formulaEnv <- change_reponse(formulaEnv, "Y", dataEnv)
-  if (name == "SNC") {
-    w <- weights$rows 
-  } else {
-    w <- weights$columns
+  formulaEnv <- change_reponse(formulaEnv, " ", dataEnv)
+  if (SNConly) {
+    w <- if (name == "SNC") weights$columns else w <- weights$rows
+    SNC <- diag(1 / (tot * w)) %*% (as.matrix(tY) %*%
+                                      model.matrix(get_Z_X_XZ_formula(formulaEnv)$formula_XZ,
+                                                   data = dataEnv, XZ = TRUE))[, -1, drop = FALSE]
+    return(SNC)
   }
-  msqr <- msdvif(formulaEnv, dataEnv, w, XZ = FALSE)
+  w <- if (name == "SNC") w <- weights$rows else w <- weights$columns
+  msqr <- try(msdvif(formulaEnv, dataEnv, w, XZ = FALSE))
   sWn <- sqrt(w)
   X <- msqr$Xw / sWn 
   msd <- msqr$meansdvif
   E_ortho <- qr.Q(msqr$qrX) / sWn
   # so Q represents the orthonormalized predictors
-  if (name == "SNC") {
-    w <- weights$columns
-  } else {
-    w <- weights$rows
-  }
+  w <- if (name == "SNC") weights$columns else w <- weights$rows
   SNC <- diag(1 / (tot * w)) %*% as.matrix(tY) %*% X
   SNC2SNC_ortho <- try(solve(qr.R(msqr$qrX)))
   if (inherits(SNC2SNC_ortho, "try-error")) {
@@ -436,14 +427,14 @@ check_data_dc_CA <- function(formulaEnv,
     TotR <- rowSums(response)
     id0 <- which(TotR == 0)
     if (length(id0)) {
-      response <- response[-id0, ]
-      dataEnv  <- dataEnv[-id0, ]
+      response <- response[-id0, , drop = FALSE]
+      dataEnv  <- dataEnv[-id0, , drop = FALSE]
     }
     TotC <- colSums(response)
     id0 <- which(TotC == 0)
     if (length(id0)) {
-      response <- response[, -id0]
-      dataTraits <- dataTraits[-id0, ]
+      response <- response[, -id0, drop = FALSE]
+      dataTraits <- dataTraits[-id0, drop = FALSE]
     }
   }
   # delete columns with missing data
@@ -455,7 +446,7 @@ check_data_dc_CA <- function(formulaEnv,
               "has missing values and is deleted from the environmental data.\n")
     }
   }
-  dataEnv <- dataEnv[, id]
+  dataEnv <- dataEnv[, id, drop = FALSE]
   id <- rep(FALSE, ncol(dataTraits))
   for (ii  in seq_along(id)) {
     id[ii] <- sum(is.na(dataTraits[,ii])) == 0
@@ -464,7 +455,7 @@ check_data_dc_CA <- function(formulaEnv,
               "has missing values and is deleted from trait data.\n")
     }
   }
-  dataTraits <- dataTraits[, id]
+  dataTraits <- dataTraits[, id, drop = FALSE]
   dataEnv <- as.data.frame(lapply(dataEnv, function(x) {
     if (is.character(x)) x <- as.factor(x) else x
     return(x)
@@ -476,6 +467,17 @@ check_data_dc_CA <- function(formulaEnv,
   rownames(dataEnv) <- rownames(response)
   rownames(dataTraits) <- colnames(response)
   # end of check
+  if (is.null(divideBySiteTotals)) {
+    N2spp <- fN2N_N2(response, 2, N2N_N2 = TRUE)
+    if (diff(range(N2spp / colSums(response))) < 1.0e-6){ # N2(N-N2) margins
+      divideBySiteTotals <- FALSE
+      message("Argument divideBySiteTotals set to FALSE, ",
+              "as species totals are proportional to N2(N-N2).\n",
+              "You can overrule this by specifying divideBySiteTotals explicitly.\n")
+    } else {
+      divideBySiteTotals <- TRUE
+    }
+  }
   TotR <- rowSums(response)
   if (divideBySiteTotals) {
     response <- response / (TotR %*% t(rep(1, ncol(response))))
@@ -489,12 +491,12 @@ check_data_dc_CA <- function(formulaEnv,
   if (is.null(formulaTraits)) {
     formulaTraits <- as.formula(paste("~", paste0(names(dataTraits),
                                                   collapse = "+")))
-    warning("formulaTraits set to ~. in fCWMSNC.\n")
+    warning("formulaTraits set to ~. in check_data_dc_CA.\n")
   }
   if (is.null(formulaEnv)) {
     formulaEnv <- as.formula(paste("~", paste0(names(dataEnv),
                                                collapse = "+")))
-    warning("formulaEnv set to ~. in fCWMSNC.\n")
+    warning("formulaEnv set to ~. in check_data_dc_CA.\n")
   }
   
   out <- list(formulaTraits = formulaTraits, formulaEnv = formulaEnv,

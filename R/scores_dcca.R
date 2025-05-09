@@ -201,7 +201,7 @@ scores_dcca <- function(x,
     if ("all" %in% display) {
       display <- names(tabula)
     }
-  } else if (inherits(x, "wrda", which = TRUE) == 1) {
+  } else if (any(inherits(x, c("wrda", "cca0"), which = TRUE) == 1)) {
     display <- match.arg(display, arg[-c(10:16)], several.ok = TRUE)
     if ("all" %in% display) {
       display <- names(tabula)[-c(10:16)]
@@ -210,8 +210,8 @@ scores_dcca <- function(x,
       which_cor <- list(NA, which_cor)
     }
   } else {
-    stop("The first argument must be of class 'dcca' or 'wrda', the result ", 
-         "of the function dc_CA or wrda.\n")
+    stop("The first argument must be of class 'dcca', 'wrda',",
+         "or 'cca0' the result of the function dc_CA, wrda or cca0.\n")
   }
   ## set "all" for tidy scores
   if ("sites" %in% display) {
@@ -224,7 +224,7 @@ scores_dcca <- function(x,
     display[display == "correlation"] <- "co"
   }
   take <- tabula[display]
-  if (inherits(x, "wrda", which = TRUE) == 1) {
+  if (any(inherits(x, c("wrda", "cca0"), which = TRUE) == 1)) {
     methd <- "wRDA"
     if (any(take %in% tabula[1:8])) {
       site_axes <- f_env_axes(x)
@@ -359,7 +359,7 @@ scores_dcca <- function(x,
   if ("biplot" %in% take) {
     e_rcor <- site_axes$correlation[, choices, drop = FALSE]
     if (!normed){
-      e_rcor <- e_rcor * site_axes$msd$sd[1, ]
+      e_rcor <- e_rcor * site_axes$msd$sd
     }
     R <- sqrt(site_axes$R2_env[choices])
     if (length(R) == 1) {
@@ -493,7 +493,7 @@ scores_dcca <- function(x,
     if ("biplot_traits" %in% take) {
       t_rcor <- species_axes$correlation[, choices, drop = FALSE]
       if (!normed){
-        t_rcor <- t_rcor * species_axes$msd$sd[1, ]
+        t_rcor <- t_rcor * species_axes$msd$sd
       }
       R <- sqrt(species_axes$R2_traits[choices])
       if (length(R) == 1) {

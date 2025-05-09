@@ -5,7 +5,13 @@
 \title{Utility function: Species-level Permutation Test in Double 
 Constrained Correspondence Analysis (dc-CA)}
 \usage{
-anova_species(object, permutations = 999, by = NULL)
+anova_species(
+  object,
+  permutations = 999,
+  rpp = TRUE,
+  n_axes = "all",
+  by = NULL
+)
 }
 \arguments{
 \item{object}{an object from \code{\link{dc_CA}}.}
@@ -14,6 +20,21 @@ anova_species(object, permutations = 999, by = NULL)
 returned by the function \code{\link[permute]{how}}, or the number of 
 permutations required (default 999) or a permutation matrix where each row 
 gives the permuted indices.}
+
+\item{rpp}{Logical indicating residual predictor permutation (default \code{TRUE}).
+When \code{FALSE}, residual response permutation is used.}
+
+\item{n_axes}{number of axes used in the test statistic (default: \code{"all"}). 
+Example, the test statistic is the sum of the first two eigenvalues, 
+if \code{n_axes=2}. With a numeric \code{n_axes} 
+and model \code{~X + Condition(Z)}, the residuals of \code{X} 
+with respect to \code{Z} are permuted with a test statistic equal to
+the sum of the first \code{n_axes} eigenvalues of the fitted \code{Y}
+in the model \code{Y ~ X + Z}, with \code{Y} the response in the model.
+In the default \code{"all"}, the test statistic is all eigenvalues of the 
+model \code{Y ~ X|Z}, \emph{i.e.} the effects of \code{X} after adjustment
+for the effects on \code{Y} of \code{Z}.
+If \code{by = "axis"}, the setting of \code{n_axes} is ignored.}
 
 \item{by}{character \code{"axis"} which sets the test statistic to the first
 eigenvalue of the dc-CA model. Default: \code{NULL} which set the test 

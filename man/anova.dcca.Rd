@@ -5,12 +5,22 @@
 \title{Community- and Species-Level Permutation Test in Double Constrained 
 Correspondence Analysis (dc-CA)}
 \usage{
-\method{anova}{dcca}(object, ..., permutations = 999, by = c("omnibus", "axis"))
+\method{anova}{dcca}(
+  object,
+  ...,
+  rpp = TRUE,
+  permutations = 999,
+  by = c("omnibus", "axis"),
+  n_axes = "all"
+)
 }
 \arguments{
 \item{object}{an object from \code{\link{dc_CA}}.}
 
 \item{...}{unused.}
+
+\item{rpp}{Logical indicating residual predictor permutation (default \code{TRUE}).
+When \code{FALSE}, residual response permutation is used.}
 
 \item{permutations}{a list of control values for the permutations for 
 species and sites (species first, sites second, for traits and environment) 
@@ -32,6 +42,18 @@ covariates) and, at the community-level, the trait-constrained inertia
 explained by the environmental predictors (without covariates). The 
 default (\code{NULL}) is computationally quicker as it avoids computation 
 of an svd of permuted data sets.}
+
+\item{n_axes}{number of axes used in the test statistic (default: \code{"all"}). 
+Example, the test statistic is the sum of the first two eigenvalues, 
+if \code{n_axes=2}. With a numeric \code{n_axes} 
+and model \code{~X + Condition(Z)}, the residuals of \code{X} 
+with respect to \code{Z} are permuted with a test statistic equal to
+the sum of the first \code{n_axes} eigenvalues of the fitted \code{Y}
+in the model \code{Y ~ X + Z}, with \code{Y} the response in the model.
+In the default \code{"all"}, the test statistic is all eigenvalues of the 
+model \code{Y ~ X|Z}, \emph{i.e.} the effects of \code{X} after adjustment
+for the effects on \code{Y} of \code{Z}.
+If \code{by = "axis"}, the setting of \code{n_axes} is ignored.}
 }
 \value{
 A list of 3 of structures as from \code{\link[vegan]{anova.cca}}. The 
@@ -39,7 +61,7 @@ elements are \code{c("species", "sites", "maxP")}
 }
 \description{
 \code{anova.dcca} performs the community- and species-level permutation tests
-of dc-CA and combines these with the 'max test', which takes the maximum of
+of dc-CA and combines these in the 'max test', which takes the maximum of
 the \emph{P}-values. The function arguments are similar to (but more 
 restrictive than) those of \code{\link[vegan]{anova.cca}}.
 }
@@ -60,6 +82,8 @@ to residualized predictor permutation in the equi-weight case.
 The function \code{\link[vegan]{anova.cca}} is implemented in C and therefore
 a factor of 20 or so quicker than the native R-code used in 
 \code{\link{anova_sites}}.
+
+The \code{n_axes} argument is new, and can be considered experimental.
 }
 \examples{
 data("dune_trait_env")
