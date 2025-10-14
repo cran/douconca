@@ -1,9 +1,19 @@
+# douconca 1.2.4
+
+* Update of function ipf2N2 for informative pre-processing of abundance data.
+The row and column marginals are set equal to Hill N2 or, the column
+marginals to N2(1-N2/N), the effective number of informative species.
+For max_iter=0 only the species marginal is adapted to N2 or N2(1-N2/N) 
+without further adjustment to the abundance table.
+This is useful if the function did not converge or gives a warning
+indicating very unequal site totals.
+
 # douconca 1.2.3
 
 * Forward selection of traits and of environmental variables added (function FS()).
 * Function ipf2N2 for informative pre-processing of abundance data. The 
 row and column marginals are set equal to Hill N2 or, the column
-marginals to 2N(N-N2)/2, the effective number of informative species.
+marginals to 2N2(N-N2)/N, the effective number of informative species.
 informative species
 * More efficiency for large data sets by addition of a new cca function (cca0).
 * An anova method for cca0 to enable residual predictor permutation.

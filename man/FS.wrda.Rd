@@ -136,3 +136,7 @@ out4 <- FS(mod4,
 out4$finalWithOneExtra
 out4$model_final
 }
+\seealso{
+\code{\link{cca0}}, \code{\link{wrda}} and 
+\code{\link{FS.dcca}}
+}

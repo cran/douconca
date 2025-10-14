@@ -46,6 +46,10 @@
 #'  If \code{is.numeric(n_axes)}, then the variance in the returned table is
 #'  the sum of the n_axes eigenvalues of the current model
 #'  (all variables so far included).
+#'  
+#' @seealso \code{\link{cca0}}, \code{\link{wrda}} and 
+#' \code{\link{FS.dcca}} 
+#'
 #' @example demo/dune_forward_slct.R
 #' 
 #' @export
@@ -142,7 +146,7 @@ FS.wrda <- function(mod,
       }
       if (inherits(out_FS, "try-error") || is.null(out_FS$eigenvalues)) {
         crit <- 0
-        message("This error is taken care of; a variable may have zero variance")
+        message("This error is taken care of.\n")
       } else {
         crit <- selection_crit_wrda(out_FS, n_axes)
       }

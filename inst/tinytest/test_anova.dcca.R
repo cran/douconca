@@ -86,7 +86,7 @@ modDivF_dcca_near_singular_species <-
         response = Y,
         dataEnv = envir,
         dataTraits = traits,
-        divideBySiteTotals = FALSE,
+        divideBySiteTotals = divide,
         verbose = FALSE)
 
 set.seed(37)

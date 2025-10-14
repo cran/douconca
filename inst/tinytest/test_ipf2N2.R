@@ -77,7 +77,7 @@ expect_equal(cor(colSums(Y_PA_N2i), N_occ * (N - N_occ)),
 N2spp <- douconca:::fN2N_N2(Y_PA_N2i, 2, N2N_N2 = TRUE)
 # is not precisely N_occ * (N - N_occ)
 # the columns sum and N2(N-N2) of the transformed table are proportional
-expect_equivalent(N2spp , 1.051256 * colSums(Y_PA_N2i), tol = 1.0e-6) 
+expect_equivalent(N2spp , 0.5256281 * colSums(Y_PA_N2i), tol = 1.0e-6) 
 
 mod2 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
               formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,

@@ -144,3 +144,6 @@ out4 <- FS(mod4,
 out4$finalWithOneExtra
 out4$model_final
 }
+\seealso{
+\code{\link{dc_CA}}
+}

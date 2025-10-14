@@ -317,8 +317,8 @@ an_func <- anova(mod_funct_traits, by = "axis")
 an_ecol_max <- an_ecol$maxP
 an_func_max <- an_func$maxP
 
-expect_equivalent(unlist(an_ecol_max[3, , drop =  TRUE]), 
-                  c(1, 0.007899116, 0.964, 0.964, 0.964), 
+expect_equivalent(unlist(an_ecol_max[3, -4, drop =  TRUE]), 
+                  c(1, 0.007899116, 0.964, 0.964), 
                   tolerance = 1.e-7)
 
 expect_equivalent(unlist(an_func_max[2, , drop = TRUE]), 

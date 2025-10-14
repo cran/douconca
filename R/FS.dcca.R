@@ -34,6 +34,8 @@
 #' @returns list with three elements: \code{final...} with selected variables,
 #' \code{model_final}, and \code{process} with account of the selection process 
 #' 
+#' @seealso \code{\link{dc_CA}}
+#' 
 #' @example demo/dune_forward_slct.R
 #' 
 #' @export

@@ -434,7 +434,7 @@ check_data_dc_CA <- function(formulaEnv,
     id0 <- which(TotC == 0)
     if (length(id0)) {
       response <- response[, -id0, drop = FALSE]
-      dataTraits <- dataTraits[-id0, drop = FALSE]
+      dataTraits <- dataTraits[-id0, , drop = FALSE]
     }
   }
   # delete columns with missing data

@@ -91,6 +91,7 @@ msdvif <- function(formula = NULL,
     Xw <- qr.resid(qrZ, X * sWn)
   }
   qrX <- if (is.null(object4QR) || !XZ) qr(Xw) else get_QR(object4QR, model = "CCA")
+  if (qrX$rank <0.5) message("A variable may have zero variance, giving the error:")
   diagXtX_inv <- diag(chol2inv(qrX$qr, size = qrX$rank))
   diagXtX_inv <- c(diagXtX_inv, rep(NA, length(sds)- length(diagXtX_inv)))
   VIF <- diagXtX_inv * sds ^ 2

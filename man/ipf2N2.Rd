@@ -6,7 +6,7 @@
 \usage{
 ipf2N2(
   Y,
-  max_iter = 100,
+  max_iter = 1000,
   updateN2 = TRUE,
   N2N_N2_species = TRUE,
   N2N_N2_sites = FALSE,
@@ -19,14 +19,18 @@ with names for rows and columns.
 BEWARE: all rows and columns should have positive sums!}
 
 \item{max_iter}{maximum number of iterative proportional fitting (ipf) 
-iterations.}
+iterations.
+If \code{max_iter == 0}, the columns are divided by their 
+informativeness (\code{N2}) or \code{N2(1-N2/N)}) without
+further pre-processing. The row sums are sums of 
+informativeness instead of effective number of informative species.}
 
 \item{updateN2}{logical, default \code{TRUE}.
 If \code{FALSE} the marginal sums are proportional to 
 the N2-marginals of the initial table, but the N2-marginals of the returned 
 matrix may not be equal to their marginal sum.
 If \code{updateN2 = TRUE} and \code{N2N_N2_species=TRUE} (the default), 
-the column marginals are \code{N2(N-N2)/2} with \code{N} the number of sites. 
+the column marginals are \code{N2(N-N2)/N} with \code{N} the number of sites.
 The row sums are then proportional to, what we term, the effective number of
 informative species.
 If \code{N2N_N2_species = FALSE},                                
@@ -36,7 +40,7 @@ the return value of \code{ipf2N2} and \code{const} a constant.
 If converged, N2 row marginals are equal to the row sums, \emph{i.e.} 
 \code{rowSums(Y2) = approx. N2sites(Y2)}.}
 
-\item{N2N_N2_species}{Set marginals proportional to \code{N2(N-N2)} Default 
+\item{N2N_N2_species}{Set marginals proportional to \code{N2(1-N2/N)} Default
 \code{TRUE}.}
 
 \item{N2N_N2_sites}{Default \code{FALSE}. Do not change.}
@@ -48,9 +52,10 @@ a matrix of the same order as the input \code{Y},
 obtained after ipf to N2-marginals.
 }
 \description{
-Function for preprocessing/transforming an abundance table
+Function for pre-processing/transforming an abundance table
 by iterative proportional fitting,  
-so that the transformed table has marginals \code{N2} or \code{N2(N-N2)}
+so that the transformed table has marginals
+proportional to \code{N2} or \code{N2(1-N2/N)}
 with \code{N} the number of elements in the margin.
 Hill-N2 is the effective number of species. It is of intrinsic interest in
 weighted averaging (CWM and SNC) as their variance is approximately 
