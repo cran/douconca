@@ -59,7 +59,8 @@ wrda <- function(formula,
     }
   }
   if (is.null(cca_object)) {
-    if (is.null(response)) response <- get_response(formula)														
+    if (is.null(response)) response <- get_response(formula)
+	if (is.null(formula)|| is_rhs_dot(formula)) data <- sanitize_df(data)
     Yn <- as.matrix(response) 
     K <- rep(1 / ncol(Yn), ncol(Yn))
     Wn <- weights / sum(weights)

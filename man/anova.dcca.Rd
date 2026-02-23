@@ -10,6 +10,7 @@ Correspondence Analysis (dc-CA)}
   ...,
   rpp = TRUE,
   permutations = 999,
+  max_axis = 10,
   by = c("omnibus", "axis"),
   n_axes = "all"
 )
@@ -29,6 +30,8 @@ permutations required (default 999, or a two-vector with the number for the
 species-level test first and that for the sites-level second), or
 a list of two permutation matrices (again, species first, sites second)
 where each row gives the permuted indices.}
+
+\item{max_axis}{maximum number of axes to test if \code{by = "axis"}.}
 
 \item{by}{character \code{"axis"} which performs a series of tests, one for
 each axis, with the eigenvalue of the axis as test statistic. 

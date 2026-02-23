@@ -5,7 +5,14 @@
 \title{Utility function: community-level permutation test in Double 
 Constrained Correspondence Analysis (dc-CA)}
 \usage{
-anova_sites(object, permutations = 999, rpp = TRUE, n_axes = "all", by = NULL)
+anova_sites(
+  object,
+  permutations = 999,
+  rpp = TRUE,
+  n_axes = "all",
+  max_axis = 10,
+  by = NULL
+)
 }
 \arguments{
 \item{object}{an object from \code{\link{dc_CA}}.}
@@ -29,6 +36,8 @@ In the default \code{"all"}, the test statistic is all eigenvalues of the
 model \code{Y ~ X|Z}, \emph{i.e.} the effects of \code{X} after adjustment
 for the effects on \code{Y} of \code{Z}.
 If \code{by = "axis"}, the setting of \code{n_axes} is ignored.}
+
+\item{max_axis}{maximum number of axes to test if \code{by = "axis"}.}
 
 \item{by}{character \code{"axis"} which sets the test statistic to the 
 first eigenvalue of the dc-CA model. Default: \code{NULL} which sets the 

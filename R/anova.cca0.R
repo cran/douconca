@@ -55,7 +55,8 @@ anova.cca0 <- function(object,
                        ...,
                        permutations = 999, 
                        by = c("omnibus", "axis"),
-                       n_axes = "all") {
+                       n_axes = "all",
+                       max_axis = 10) {
   # permat a matrix of permutations. 
   # If set overrules permuations.
   by <- match.arg(by)
@@ -87,7 +88,9 @@ anova.cca0 <- function(object,
                                      by = by, n_axes  = n_axes,
                                      return = "all")
   if (by == "axis") {
-    while (out_tes[[1]]$rank > length(out_tes)) {
+    m_axis <- 1
+    while (out_tes[[1]]$rank > length(out_tes) & m_axis < max_axis) {
+	  m_axis <- m_axis + 1
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)
       out_tes[[length(out_tes) + 1]] <- 
         randperm_eX0sqrtw(Yw,Xw, Zw, sWn = sWn, 

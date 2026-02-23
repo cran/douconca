@@ -322,6 +322,6 @@ expect_equivalent(unlist(an_ecol_max[3, -4, drop =  TRUE]),
                   tolerance = 1.e-7)
 
 expect_equivalent(unlist(an_func_max[2, , drop = TRUE]), 
-                  c(1, 0.09752322, 0.10085067, 3.4687262, 0.427), 
+                  c(1, 0.09752322, 0.10085067, 3.4687262, 0.412), 
                   tolerance = 1.e-7)
 

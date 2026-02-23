@@ -82,7 +82,8 @@ cca0 <- function(formula,
     }
   }  
   if (is.null(cca_object)) {
-    if (is.null(response)) response <- get_response(formula)														
+    if (is.null(response)) response <- get_response(formula)
+	if (is.null(formula) || is_rhs_dot(formula)) data <- sanitize_df(data)
     sumY <- sum(response)
     Yn <- as.matrix(response) / sumY
     R <- rowSums(Yn)

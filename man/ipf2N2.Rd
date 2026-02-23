@@ -6,23 +6,23 @@
 \usage{
 ipf2N2(
   Y,
-  max_iter = 1000,
+  max_iter = 10000,
   updateN2 = TRUE,
   N2N_N2_species = TRUE,
-  N2N_N2_sites = FALSE,
-  crit = 0.01
+  N2N_N2_sites = FALSE
 )
 }
 \arguments{
 \item{Y}{abundance table (matrix or dataframe-like), ideally, 
-with names for rows and columns. 
-BEWARE: all rows and columns should have positive sums!}
+with names for rows and columns.}
 
 \item{max_iter}{maximum number of iterative proportional fitting (ipf) 
 iterations.
-If \code{max_iter == 0}, the columns are divided by their 
-informativeness (\code{N2}) or \code{N2(1-N2/N)}) without
-further pre-processing. The row sums are sums of 
+If \code{max_iter = 0}, the columns are divided by their effective number or
+informativeness (\code{N2} or \code{N2(1-N2/N)}, depending on the setting
+of \code{N2N_N2_species}) without
+further pre-processing and the row sums are then,
+with \code{N2N_N2_species = TRUE}, sums of
 informativeness instead of effective number of informative species.}
 
 \item{updateN2}{logical, default \code{TRUE}.
@@ -35,17 +35,20 @@ The row sums are then proportional to, what we term, the effective number of
 informative species.
 If \code{N2N_N2_species = FALSE},                                
 the returned transformed table has N2 columns marginals, 
-\emph{i.e.} \code{colSums(Y2) = const*N2species(Y2)} with \code{Y2} 
-the return value of \code{ipf2N2} and \code{const} a constant.
+\emph{i.e.} \code{colSums(Y2) = N2species(Y2)} with \code{Y2} 
+the return value of \code{ipf2N2}.
 If converged, N2 row marginals are equal to the row sums, \emph{i.e.} 
-\code{rowSums(Y2) = approx. N2sites(Y2)}.}
+\code{rowSums(Y2) = approx. const*N2sites(Y2)}and \code{const} a constant.}
 
-\item{N2N_N2_species}{Set marginals proportional to \code{N2(1-N2/N)} Default
-\code{TRUE}.}
+\item{N2N_N2_species}{Set species marginal to
+ the value of \code{N2(1-N2/N)} for each species.
+Default \code{TRUE}. If \code{FALSE}, the marginal is set to the \code{N2}
+value of each species.}
 
-\item{N2N_N2_sites}{Default \code{FALSE}. Do not change.}
-
-\item{crit}{stopping criterion.}
+\item{N2N_N2_sites}{Default \code{FALSE} sets the marginal proportional
+to the \code{N2} value of each site. 
+If \code{TRUE}, the marginal is set to \code{N2(1-N2/m)}, with \code{m} the 
+number of species.}
 }
 \value{
 a matrix of the same order as the input \code{Y},
@@ -71,7 +74,10 @@ is not very informative. This is acknowledged with the default option
 with \code{N2N_N2_species=TRUE}, species that occur
 in more than halve the number of sites are down-weighted, so that
 the row sum is no longer equal to the richness of the site (the number of species),
-but proportional to the number of informative species.
+but proportional to the number of informative species. 
+The returned matrix has the intended species marginal (column sums),
+by construction of the algorithm, even without convergence. 
+On convergence, it has the intended site marginal (row sums).
 }
 \examples{
 data("dune_trait_env")
@@ -80,32 +86,34 @@ data("dune_trait_env")
 rownames(dune_trait_env$comm) <- dune_trait_env$comm$Sites
 Y <- dune_trait_env$comm[, -1] # must delete "Sites"
 Y_N2 <- ipf2N2(Y, updateN2 = FALSE, N2N_N2_species = FALSE)
-attr(Y_N2, "iter") # 4
+attr(Y_N2, "iter") # 61
 
 # show that column margins of the transform matrix are
 # equal to the Hill N2 values
-diff(range(colSums(Y_N2) / apply(X = Y, MARGIN = 2, FUN = fN2))) #  8.881784e-16
+diff(range(colSums(Y_N2) / apply(X = Y, MARGIN = 2, FUN = fN2))) #  4.440892e-16
 diff(range(rowSums(Y_N2) / apply(X = Y, MARGIN = 1, FUN = fN2))) #  0.07077207
 
 Y_N2i <- ipf2N2(Y, updateN2 = TRUE, N2N_N2_species = FALSE)
 attr(Y_N2i, "iter") # 5
 diff(range(colSums(Y_N2i) / apply(X = Y_N2i, MARGIN = 2, FUN = fN2))) # 2.220446e-15
-diff(range(rowSums(Y_N2i) / apply(X = Y_N2i, MARGIN = 1, FUN = fN2))) # 0.105742
+diff(range(rowSums(Y_N2i) / apply(X = Y_N2i, MARGIN = 1, FUN = fN2))) # 8.881784e-16
 
 # the default version:
 Y_N2N_N2i <- ipf2N2(Y)
 # ie. 
 # Y_N2N_N2i <- ipf2N2(Y, updateN2 = TRUE, N2N_N2_species = TRUE)
-attr(Y_N2N_N2i, "iter") # 16
+attr(Y_N2N_N2i, "iter") # 29
 N2 <- apply(X = Y_N2N_N2i, MARGIN = 2, FUN = fN2)
 N <- nrow(Y)
-diff(range(colSums(Y_N2N_N2i) / (N2 * (N - N2)))) # 2.220446e-16
+diff(range(colSums(Y_N2N_N2i) / (N2 * (N - N2)))) # 4.857226e-17
 
 N2_sites <- apply(X = Y_N2N_N2i, MARGIN = 1, FUN = fN2)
 R <- rowSums(Y_N2N_N2i)
-N * max(N2_sites / sum(N2_sites) - R / sum(R)) # 0.009579165
+N * max(N2_sites / sum(N2_sites) - R / sum(R)) # 0.006116092
 
-sum(Y_N2N_N2i) - sum(Y)
+sum(Y > 0)
+sum(Y_N2N_N2i)
+sum(Y)
 
 mod0 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
               formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
@@ -129,15 +137,15 @@ mod1$eigenvalues / mod0$eigenvalues
 # ipf2N2 for a presence-absence data matrix																   
 Y_PA <- 1 * (Y > 0)
 Y_PA_N2 <- ipf2N2(Y_PA, N2N_N2_species = FALSE)
-attr(Y_PA_N2, "iter") # 1
-diff(range(Y_PA - Y_PA_N2)) # 4.440892e-16, i.e no change
+attr(Y_PA_N2, "iter") # 3
+diff(range(Y_PA - Y_PA_N2)) #  7.771561e-16, i.e no change
 
 Y_PA_N2i <- ipf2N2(Y_PA, N2N_N2_species = TRUE)
-attr(Y_PA_N2i, "iter") # 9
+attr(Y_PA_N2i, "iter") # 567
 N_occ <- colSums(Y_PA) # number of occurrences of species
 N <- nrow(Y_PA)
 plot(N_occ, colSums(Y_PA_N2i))
-cor(colSums(Y_PA_N2i), N_occ * (N - N_occ)) # 0.9916
+cor(colSums(Y_PA_N2i), N_occ * (N - N_occ)) #  0.9826123
 mod2 <- dc_CA(formulaEnv = ~ A1 + Moist + Mag + Use + Manure,
               formulaTraits = ~ SLA + Height + LDMC + Seedmass + Lifespan,
               response = Y_PA,  
@@ -163,4 +171,10 @@ New robust weighted averaging- and model-based methods
 for assessing trait-environment relationships. 
 Methods in Ecology and Evolution, 10 (11), 1962-1971. 
 \doi{10.1111/2041-210X.13278}
+
+ter Braak, C.J.F. (2026).
+Fourth-corner latent variable models overstate confidence in
+trait–environment relationships and what to use instead
+Environmental and Ecological Statistics.
+\doi{10.1007/s10651-025-00696-0}
 }

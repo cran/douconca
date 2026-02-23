@@ -26,6 +26,7 @@
 #' explained by the environmental predictors (without covariates). The default 
 #' is quicker computationally as it avoids computation of an svd of permuted 
 #' data sets.
+#' @param max_axis maximum number of axes to test if \code{by = "axis"}.
 #' @param n_axes number of axes used in the test statistic (default: \code{"all"}). 
 #' Example, the test statistic is the sum of the first two eigenvalues, 
 #' if \code{n_axes=2}. With a numeric \code{n_axes} 
@@ -72,6 +73,7 @@
 anova_species <- function(object, 
                           permutations = 999, 
                           rpp = TRUE,
+                          max_axis = 10,
                           n_axes = "all",
                           by = NULL) {
   if (is.null(object$SNCs_orthonormal_env) && is.null(object$data$Y)) {
@@ -121,7 +123,9 @@ anova_species <- function(object,
                             permutations = permutations, by = by,
                             n_axes = n_axes, return = "all")
   if (by == "axis") {
-    while (out_tes[[1]]$rank > length(out_tes)) {
+	m_axis <- 1
+    while (out_tes[[1]]$rank > length(out_tes) & m_axis < max_axis) {
+      m_axis <- m_axis + 1		 
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)
       out_tes[[length(out_tes) + 1]] <- 
         randperm(Yw, Xw, Zw, sWn = sWn, permutations = permutations,
@@ -130,7 +134,7 @@ anova_species <- function(object,
   }
   f_species <- fanovatable(out_tes, Nobs = N, dfpartial = dfpartial, type= "col",
                            calltext = c(object$call), perm_meth = perm_meth,
-                           n_axes = out_tes[[1]]$n_axes)  
+                           n_axes = out_tes[[1]]$n_axes, max_axis = max_axis)  
   result <- list(table = f_species, eigenvalues = attr(f_species, "eig"))
   return(result)
 }
@@ -492,7 +496,8 @@ fanovatable <- function(out_tes,
                         Nobs, 
                         dfpartial, 
                         type = "dcCA", 
-                        calltext, 
+                        calltext,
+                        max_axis = 10,
                         perm_meth = "Residualized predictor permutation\n",
                         n_axes = "all") {
   if (type == "wrda") {
@@ -513,7 +518,8 @@ fanovatable <- function(out_tes,
   }), NA)
   F.perm <- out_tes[[1]]$Fval
   R2.perm <- out_tes[[1]]$R2.perm
-  eig1.perm = out_tes[[1]]$eig1.perm
+  eig1.perm <- out_tes[[1]]$eig1.perm
+  if(is.null(max_axis)) max_axis <- 10
   if (length(out_tes) > 1) {
     df <- c(rep(1, length(ss) - 1), out_tes[[length(out_tes)]]$df[2])
     names(df) <- c(paste0(methd, seq_along(out_tes)), "Residual")

@@ -9,6 +9,7 @@ anova_species(
   object,
   permutations = 999,
   rpp = TRUE,
+  max_axis = 10,
   n_axes = "all",
   by = NULL
 )
@@ -23,6 +24,8 @@ gives the permuted indices.}
 
 \item{rpp}{Logical indicating residual predictor permutation (default \code{TRUE}).
 When \code{FALSE}, residual response permutation is used.}
+
+\item{max_axis}{maximum number of axes to test if \code{by = "axis"}.}
 
 \item{n_axes}{number of axes used in the test statistic (default: \code{"all"}). 
 Example, the test statistic is the sum of the first two eigenvalues, 

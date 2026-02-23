@@ -58,6 +58,7 @@ anova_sites <- function(object,
                         permutations = 999,
                         rpp = TRUE,
                         n_axes = "all",
+                        max_axis = 10,
                         by = NULL) { 
   if (is.null(object$CWMs_orthonormal_traits)) {
     warning("Site level anova requires abundance data or ", 
@@ -114,7 +115,9 @@ anova_sites <- function(object,
                            permutations = permutations, by = by, 
                            n_axes = n_axes, return = "all")
   if (by == "axis") {
-    while (out_tes[[1]]$rank > length(out_tes)) {
+	m_axis <- 1
+    while (out_tes[[1]]$rank > length(out_tes) & m_axis < max_axis) {
+      m_axis <- m_axis + 1
       Zw <- cbind(Zw, out_tes[[length(out_tes)]]$EigVector1)
       out_tes[[length(out_tes) + 1]] <- 
         randperm(Yw, Xw, Zw, sWn = sWn, permutations = permutations, 
@@ -122,7 +125,8 @@ anova_sites <- function(object,
     }
   }
   f_sites <- fanovatable(out_tes, Nobs = N, dfpartial = dfpartial, type = "row", 
-                         calltext = c(object$call), perm_meth = perm_meth)
+                         calltext = c(object$call), perm_meth = perm_meth, 
+						 max_axis = max_axis)
   result <- list(table = f_sites, eigenvalues = attr(f_sites, "eig"))
   return(result)
 }

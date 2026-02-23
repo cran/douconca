@@ -9,7 +9,8 @@
   ...,
   permutations = 999,
   by = c("omnibus", "axis"),
-  n_axes = "all"
+  n_axes = "all",
+  max_axis = 10
 )
 }
 \arguments{
@@ -39,6 +40,8 @@ In the default \code{"all"}, the test statistic is all eigenvalues of the
 model \code{Y ~ X|Z}, \emph{i.e.} the effects of \code{X} after adjustment
 for the effects on \code{Y} of \code{Z}.
 If \code{by = "axis"}, the setting of \code{n_axes} is ignored.}
+
+\item{max_axis}{maximum number of axes to test if \code{by = "axis"}.}
 }
 \value{
 A list with two elements with names \code{table} and \code{eigenvalues}.

@@ -26,32 +26,37 @@ The aim of the `douconca` package is to help ecologists unravel trait-environmen
 relationships from an abundance data table with
 associated multi-trait and multi-environment data tables.
 A popular method to such aim is RLQ [@doledec1996RLQ;@dray2014RLQ],
-which also a three-tables method. RLQ is available in the R-package `ade4`
+which is also a three-tables method. RLQ is available in the R-package `ade4`
 [@dray2007ade4; @thioulouse2018multivariate].
 The `douconca` package provides an alternative method, termed 
 double-constrained correspondence analysis (dc-CA), which is a natural 
 extension of the commonly used method of community-weighted means (CWMs) regression
-[@BraakRossum2025;@Braak2018dcCA;@kleyer2012assessing].  
+[@Braak2026;@BraakRossum2025;@Braak2018dcCA;@kleyer2012assessing].   
 As dc-CA is based on both regression analysis and ordination
 (factorial analysis), it allows for the usual forms of testing, model building,
 and of biplots of resulting scores.
 
 The value of dc-CA compared to RLQ, GLMM3 and CWM-regression
-is discussed, with examples, in ter Braak and van Rossum (2025).
+is discussed, with examples, in ter Braak and van Rossum (2025) and
+ter Braak (2026). 				  
 
 The `douconca` package has a `formula`-interface to specify the dc-CA model, 
 and `scores`, `anova`, `plot` and `predict` functions, mostly fairly similar to
-those in the `vegan` package [@oksanen_vegan2024] on to which `douconca` is based.
-
+those in the `vegan` package [@oksanen_vegan2024] on to which `douconca` is
+based. Because of the `formula`-interface, names of trait and environmental
+variables, and of levels of factors may need to be changed to syntactically 
+valid names, e.g. by `make.names` or `janitor::clean_names`.
 # Double constained correspondence analysis
 
 As RLQ, dc-CA seeks for an ordination (i.e. a low-dimensional representation of)
-of the multi-trait, multi-environment relationships, but dc-CA differs from RLQ in that
-dc-CA is based on regression with the traits and environmental variables as predictors,
-whereas RLQ is based on co-variance.
+of the multi-trait, multi-environment relationships, but dc-CA differs from RLQ 
+in that dc-CA is based on regression with the traits and environmental variables 
+as predictors, whereas RLQ is based on co-variance.
 The dc-CA method thus allows for variation-partitioning and 
 the type of model-building that is familiar to users of regression analysis,
-whereas RLQ does not.
+whereas RLQ does not. Moreover, dc-CA is more robust and, with N2-based 
+pre-processing, equally powerfull as fourth-corner
+generalized linear latent variable models (GLLVM) [@Braak2026].
 
 A dc-CA axis consists of two regression models 
 (linear combinations), one of traits and the other of environmental predictors,
@@ -363,4 +368,13 @@ scores(mod_LDMC, display = "tval"))
 Alternatively, we can use 
 `coef(mod_LDMC,  type = "env2traits",normed = FALSE)`
 which give the same values as `coef(lmLDMC)[-1]`.
+
+## Restrictions on names of variables and levels of factors
+
+As said, the `douconca` package has a `formula`-interface to specify the dc-CA
+model. By consequence, there are restriction on the names of traits and
+environmental variables. For example these should not include ":" or "/", as 
+these symbols are special in formulas. The same applies to names of levels of
+factors as factors are transformed to indicator matrices using a formula. 
+
 # References

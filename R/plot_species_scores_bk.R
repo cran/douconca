@@ -8,7 +8,8 @@
 #' row names (species names) or a tibble with variable with name
 #' \code{speciesname} containing species names and a column or variable with 
 #' name \code{scoresname} containing the scores (default: \code{"RDA1"}), e.g.
-#' species scores from library \code{vegan}.
+#' species scores from library \code{vegan} and an optional factor with
+#' name specified by the argument \code{speciesgroup}.
 #' @param ylab y-axis label. Default: $b_k$.
 #' @param y_lab_interval interval of the y-axis ticks. A tick at no effect (0) 
 #' is always included; default: 0.5.

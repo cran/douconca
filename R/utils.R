@@ -106,14 +106,51 @@ msdvif <- function(formula = NULL,
   return(rr)
 }
 
-# Hill number of order 2: N2
 #' @noRd
 #' @keywords internal
-fN2 <- function(x) {
-  x <- x / sum(x)
-  1 / sum(x * x)
+modelmatrixI <- function(formula, 
+                         data, 
+                         XZ = TRUE){
+  # model matrix with full identity contracts = full indicator coding
+  ccontrasts <- function(x, data) {
+    contrasts(data[[x]], contrasts = FALSE)
+  }
+  ff <- get_Z_X_XZ_formula(formula, data)
+  if (XZ) {
+    f <- ff$formula_XZ 
+  } else {
+    f <- ff$formula_X1
+  }
+  fcts <- c(ff$Condi_factor, ff$focal_factor)
+  if (length(fcts)) {
+    cntI <-  lapply(as.list(fcts), ccontrasts, data = data)
+    names(cntI) <- fcts
+    X <- model.matrix(f, contrasts.arg = cntI, data = data)
+  } else {
+    X <- model.matrix(ff$formula_XZ, data = data)
+  }
+  return(X[, -1, drop = FALSE])
 }
-#
+
+#' @noRd
+#' @keywords internal
+is_rhs_dot <- function(f) {
+   # For one-sided formulas (~ .), RHS is [[2]]; for two-sided (y ~ .), RHS is [[3]]
+  rhs <- if (length(f) >= 3) f[[3]] else f[[2]]
+  is.name(rhs) && identical(as.character(rhs), ".")
+}
+
+#' @noRd
+#' @keywords internal
+sanitize_df <- function(df) {
+  names(df) <- make.names(names(df))
+  for (nm in names(df)) {
+    if (is.factor(df[[nm]])) {
+      levels(df[[nm]]) <- make.names(levels(df[[nm]]))
+    }
+  }
+  df
+}
 
 # from vegan 2.6-4 --------------------------------------------------------
 
@@ -162,28 +199,3 @@ centroids.cca <-  function(x,
   return(out)
 }
 
-#' @noRd
-#' @keywords internal
-modelmatrixI <- function(formula, 
-                         data, 
-                         XZ = TRUE){
-  # model matrix with full identity contracts = full indicator coding
-  ccontrasts <- function(x, data) {
-    contrasts(data[[x]], contrasts = FALSE)
-  }
-  ff <- get_Z_X_XZ_formula(formula, data)
-  if (XZ) {
-    f <- ff$formula_XZ 
-  } else {
-    f <- ff$formula_X1
-  }
-  fcts <- c(ff$Condi_factor, ff$focal_factor)
-  if (length(fcts)) {
-    cntI <-  lapply(as.list(fcts), ccontrasts, data = data)
-    names(cntI) <- fcts
-    X <- model.matrix(f, contrasts.arg = cntI, data = data)
-  } else {
-    X <- model.matrix(ff$formula_XZ, data = data)
-  }
-  return(X[, -1, drop = FALSE])
-}

@@ -225,7 +225,7 @@ scores_dcca <- function(x,
   }
   take <- tabula[display]
   if (any(inherits(x, c("wrda", "cca0"), which = TRUE) == 1)) {
-    methd <- "wRDA"
+    methd <- if (inherits(x, "cca0")) "CCA" else "wRDA"
     if (any(take %in% tabula[1:8])) {
       site_axes <- f_env_axes(x)
     }

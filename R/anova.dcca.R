@@ -72,10 +72,11 @@
 #' 
 #' @importFrom stats anova
 #' @export
-anova.dcca <- function(object, 
+anova.dcca <- function(object,
                        ...,
-                       rpp = TRUE,								  
-                       permutations = 999, 
+                       rpp = TRUE,
+                       permutations = 999,
+                       max_axis = 10,
                        by = c("omnibus", "axis"),
                        n_axes = "all") {
   # object dcca object; permat  a matrix of permutations. 
@@ -97,7 +98,7 @@ anova.dcca <- function(object,
            "(numbers or of class how).\n")
     }
   }
-  f_species0 <- anova_species(object, by = by, n_axes = n_axes,
+  f_species0 <- anova_species(object, by = by, n_axes = n_axes, max_axis = max_axis,
                               permutations = permutations[[1]])																		  
   object1 <- paste("Model:", c(object$call), "\n")
   if (!is.null(f_species0$table)){
@@ -116,8 +117,14 @@ anova.dcca <- function(object,
   } else {
     f_species <- NULL
   }
-  if (by == "axis") by1 <- by else by1 <-NULL
-  if (inherits(object, "dccav") && is.character(n_axes)){
+  if (by == "axis") {
+    by1 <- by
+    max_axis1 <- max_axis
+  } else {
+    by1 <- NULL 
+    max_axis1 <- NULL
+  }
+  if (inherits(object, "dccav") && is.character(n_axes) && is.null(max_axis)){
     f_sites <- anova(object$RDAonEnv, by = by1, permutations = permutations[[2]])
     rownames(f_sites) <- c(paste0("dcCA", seq_len(nrow(f_sites) - 1)), "Residual")
     attr(f_sites, "heading") <- 
@@ -126,9 +133,10 @@ anova.dcca <- function(object,
     names(f_sites)[2]<- "ChiSquare"
     f_sites$R2 <- f_sites$ChiSquare / sum(f_sites$ChiSquare)
     f_sites$R2[nrow(f_sites)] <- NA
-    f_sites <- f_sites[, c(1, 2, 5, 3, 4)]
+    m_axis <- min(c(max_axis + 1, nrow(f_sites)))
+    f_sites <- f_sites[1:m_axis, c(1, 2, 5, 3, 4)]
   } else {
-    f_sites0 <- anova_sites(object, by = by1, n_axes = n_axes,
+    f_sites0 <- anova_sites(object, by = by1, n_axes = n_axes, max_axis= max_axis1,
                             rpp = rpp, permutations = permutations[[2]])
     tab <- f_sites0$table
     heading <- paste0("sites-level permutation test using dc-CA\n",
@@ -167,7 +175,7 @@ anova.dcca <- function(object,
       head <- 
         paste0("Max test combining the community- and species- level tests \n", 
                object1,
-               "\na mix the species- (traits) and community- (environment) levels:\n")
+               "mixing the species- (traits) and community- (environment) levels:\n")
       fmax <- structure(f_max, heading = head)
       attr(f_max, "heading") <- head
       class(f_max) <- c("anova.cca", "anova", "data.frame")

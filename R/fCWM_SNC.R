@@ -488,12 +488,14 @@ check_data_dc_CA <- function(formulaEnv,
   TotC <- TotC / sum(TotC)
   weights <- list(columns = TotC, rows = TotR) # unit sums
   Nobs <- nrow(response)
-  if (is.null(formulaTraits)) {
+  if (is.null(formulaTraits) || is_rhs_dot(formulaTraits)) {
+    dataTraits <- sanitize_df(dataTraits)
     formulaTraits <- as.formula(paste("~", paste0(names(dataTraits),
                                                   collapse = "+")))
     warning("formulaTraits set to ~. in check_data_dc_CA.\n")
   }
-  if (is.null(formulaEnv)) {
+  if (is.null(formulaEnv) || is_rhs_dot(formulaEnv)) {
+    dataEnv <- sanitize_df(dataEnv)
     formulaEnv <- as.formula(paste("~", paste0(names(dataEnv),
                                                collapse = "+")))
     warning("formulaEnv set to ~. in check_data_dc_CA.\n")
