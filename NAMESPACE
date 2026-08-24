@@ -10,6 +10,7 @@ S3method(fitted,dcca)
 S3method(plot,dcca)
 S3method(predict,dcca)
 S3method(predict,wrda)
+S3method(print,cca)
 S3method(print,dcca)
 S3method(print,wrda)
 S3method(scores,dcca)
@@ -28,14 +29,16 @@ export(plot_species_scores_bk)
 export(scores)
 export(wrda)
 importFrom(rlang,.data)
-importFrom(stats,anova)
-importFrom(stats,as.formula)
-importFrom(stats,contrasts)
-importFrom(stats,delete.response)
-importFrom(stats,median)
-importFrom(stats,model.frame)
-importFrom(stats,model.matrix)
-importFrom(stats,reformulate)
-importFrom(stats,terms)
+importFrom(stats,
+  anova,
+  as.formula,
+  contrasts,
+  delete.response,
+  median,
+  model.frame,
+  model.matrix,
+  reformulate,
+  terms
+)
 importFrom(utils,getFromNamespace)
 importFrom(vegan,scores)

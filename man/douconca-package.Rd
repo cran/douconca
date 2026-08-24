@@ -71,6 +71,7 @@ vegan: Community Ecology Package. R package version 2.6-4.
 
 Authors:
 \itemize{
+  \item Bart-Jan van Rossum \email{bart-jan.vanrossum@wur.nl} (\href{https://orcid.org/0000-0002-8673-2514}{ORCID})
   \item Cajo J.F ter Braak \email{cajo.terbraak@wur.nl} (\href{https://orcid.org/0000-0002-0414-8745}{ORCID})
 }
 

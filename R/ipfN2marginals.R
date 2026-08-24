@@ -133,6 +133,7 @@ ipf2N2 <- function(Y,
       Y[Y < 0] <- 0 # tiny non-negative values should not occur
     }
   }
+  R <- rowSums(Y)
   attr(Y, which = "N2species_original") <- N2spp0
   attr(Y, which = "N2sites_original") <- N2sites0
   attr(Y, which = "N2species") <- N2spp
@@ -142,7 +143,6 @@ ipf2N2 <- function(Y,
   attr(Y, which = "crit") <- crit0
   colnames(Y) <- colnams
   rownames(Y) <- rownams
-  R <- rowSums(Y)
   if (fN2(R) / length(R) < 0.5) {
     message("Warning: unbalanced site totals in return value:",
             "N2 of row sums less than halve the number of rows.\n")

@@ -100,6 +100,8 @@ plot.dcca <- function(x,
   }
   if (nspecies == 0) {
     widths <- c(widths[1], sum(widths[-1]))
+  } else {
+    nspecies <- min(nspecies, ncol(x$data$Y))
   }
   pd <- getPlotdata(x, axis = axis, envfactor = envfactor, 
                     traitfactor = traitfactor, facet = facet, 
@@ -281,7 +283,7 @@ fplot_species <- function(pd,
       c("composite_trait", "contribution", "species_group")[seq_len(ncol(SNC_LC_mat))]
     rownames(SNC_LC_mat) <- colnames(x$data$Y)
     sspecies <- sort(SNC_LC_mat[, "contribution"], decreasing = TRUE)
-    threshold <- SNC_LC_mat[names(sspecies)[nspecies + 1], "contribution"]
+    threshold <- SNC_LC_mat[names(sspecies)[nspecies], "contribution"] - 1e-10
     # ready for plotting
     plot_species <- plot_species_scores_bk(
       species_scores = SNC_LC_mat,

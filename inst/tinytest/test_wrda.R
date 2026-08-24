@@ -18,9 +18,11 @@ mod_wrda00 <- wrda(formula = Y ~ A1 + Moist + Manure + Use + Condition(Mag),
                    response = response, 
                    data = dune_trait_env$envir, 
                    weights = w)
+
 expect_error(wrda(formula = Y ~ A1 + Moist + Manure + Use + Condition(Mag),
                   data = dune_trait_env$envir, 
                   weights = w), "object 'Y' not found")
+
 mod_wrda <- wrda(formula = response ~ A1 + Moist + Manure + Use + Condition(Mag),
                  data = dune_trait_env$envir, 
                  weights = w)
@@ -48,10 +50,12 @@ expect_equal(anova(mod_wrda, by = "axis")$table$Variance,
                1.90283508422467, 24.4005894936307))
 
 set.seed(129)
+
 anova_wrda <- anova(mod_wrda)
 anova_byaxis_wrda <- anova(mod_wrda, by = "axis")
-expect_equal_to_reference(anova_wrda, "anova_wrda")
-expect_equal_to_reference(anova_byaxis_wrda, "anova_byaxis_wrda")
+
+expect_equivalent_to_reference(anova_wrda, "anova_wrda")
+expect_equivalent_to_reference(anova_byaxis_wrda, "anova_byaxis_wrda")
 
 # The default is equal weights, which allows checking against vegan
 mod_wrda_ew <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure),
@@ -62,27 +66,20 @@ mod_wrda_ew <- wrda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manu
 mod_vegan <- vegan::rda(formula = response ~ A1 + Moist + Mag + Use + Condition(Manure), 
                         data = dune_trait_env$envir)
 
-mod_vegan
-mod_wrda_ew
-abs(mod_wrda_ew$site_axes$site_scores$lc_env_scores)/
-  abs(scores(mod_vegan, 
-             choices = seq_len(ncol(mod_wrda_ew$site_axes$site_scores$lc_env_scores)),
-             display= "lc", scaling = "sites"))
 expect_equivalent(mod_wrda_ew$CCA$eig, mod_vegan$CCA$eig)
 expect_equal(mod_wrda_ew$tot.chi, mod_vegan$tot.chi)
 expect_equal(mod_wrda_ew$CCA$tot.chi, mod_vegan$CCA$tot.chi)
 expect_equivalent(abs(mod_wrda_ew$CCA$u), abs(mod_vegan$CCA$u))
 
-
-
 const <- 6.385427
+
 expect_equivalent(abs(mod_wrda_ew$site_axes$site_scores$lc_env_scores),
                   abs(const *scores(mod_vegan, 
                                     choices = seq_len(ncol(mod_wrda_ew$site_axes$site_scores$lc_env_scores)),
                                     display= "lc", scaling = "sites")), tol = 1.0e-6)
 
-
 expect_stdout(wrda_print <- print(mod_wrda))
+
 expect_equal(names(wrda_print), 
              c("call", "method", "tot.chi", "formula", "site_axes", 
                "species_axes", "Nobs", "eigenvalues", "weights", "data", "Ybar", 

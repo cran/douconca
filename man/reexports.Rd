@@ -11,6 +11,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{vegan}{\code{\link[vegan]{scores}}}
+  \item{vegan}{\code{\link[vegan:scores]{scores()}}}
 }}
 

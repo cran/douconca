@@ -51,8 +51,9 @@ and Ecological Statistics, 25(2), 171-197.
 ter Braak, C.J.F. and van Rossum, B. (2025). Linking Multivariate Trait
 Variation to the Environment: Advantages of Double Constrained
 Correspondence Analysis with the R Package Douconca. Ecological
-Informatics, 88. <https://doi.org/10.1016/j.ecoinf.2025.103143> \##
-Installation
+Informatics, 88. <https://doi.org/10.1016/j.ecoinf.2025.103143>
+
+## Installation
 
 You can install the CRAN version of `douconca` by:
 

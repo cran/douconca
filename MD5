@@ -1,6 +1,6 @@
-e8a60a835c74d4824a639272568eba13 *DESCRIPTION
-426c4e849b024a8a2f4fd56f1a34fbfc *NAMESPACE
-96273b319a7657052c0e74a23fde58a8 *NEWS.md
+a256492212e729dc11c72df4c0c2d13a *DESCRIPTION
+259059a62c510db82a3fd46f411f0928 *NAMESPACE
+82247d087d9e485f6dc7430afca024a9 *NEWS.md
 d7e0b671bdd6b4277eb49c227e893084 *R/FS.dcca.R
 318bdea3e6b565f4b85a94f01fa3b722 *R/FS.wrda.R
 f7a97ddf0faa92fb2338e492191271e0 *R/Rank_mod.R
@@ -22,8 +22,8 @@ f851b36204a9ac89c53a5155c7cbb68f *R/f_trait_axes.R
 f28c4141845b5769710b66aa1114722b *R/functions_using_cca_object_internals.R
 160cc3b4f57255a624bfc348dfc59d28 *R/getPlotdata.R
 839e0fe17f1492a70876b2c8be19284b *R/get_Z_X_XZ_formula.R
-a61095eb96599465734ef327fa5526d4 *R/ipfN2marginals.R
-d2bcf230a3ad2592c23890a16798c3f1 *R/plot.dcCA.R
+c2b9cb423a6afdd4b58ff2f41744df52 *R/ipfN2marginals.R
+5061be63631403671948362f4e894aaa *R/plot.dcCA.R
 fb6f41098e5756cf7f82556daaf756bb *R/plot_dcCA_CWM_SNC.R
 4815515d71de32d84df8096c0dba904b *R/plot_species_scores_bk.R
 854c8d2a6d26959d0e02ab6b733d92b9 *R/predict.dcca.R
@@ -32,15 +32,15 @@ c61d1f9e19dab4ffb9add438b557a573 *R/predict_functions.R
 c9a9f859b3d680f7c742e1aee5a31d5e *R/print.dcca.R
 6919a49a65e12ac23e52a45780fcd75c *R/print.wrda.R
 501f16eb4b33bdddc51b5aa9d64b076b *R/print_dcca.R
-e61221c21716972a4b5afe1d8d5b0fe7 *R/reexport.R
+14543913943a8382b73a2b9ae644456e *R/reexport.R
 af700c3c41bbb32abcefdda8028e6390 *R/scores.dcca.R
 ec37808ce65e5644d09257f972d91caf *R/scores.wrda.R
 6c36305ae17a407c3543c1f11a6430f5 *R/scores_dcca.R
 cff4d1bea4547bf592ff35dcf4239799 *R/utils.R
 480c65ff2b3f29ec637729c8b452f507 *R/wrda.R
-3a27adf4f819ac7079c50b8a0dbd0d89 *README.md
-d54042561b90aafd8a9a202ea63e1e4b *build/partial.rdb
-1464d0cbdeee6e8e47a4eb109d064bb3 *build/vignette.rds
+f8416e3c79517db900e257b32ef3ecf4 *README.md
+6af8e7644a2c366a25339b1923c9a048 *build/partial.rdb
+da32ca40e73f00083ec2e3d2844f173e *build/vignette.rds
 a2a688c6ba285dda64432a66294b766b *data/dune_trait_env.rda
 9b5d0ef076670bd6bece1e49b38ed834 *demo/00Index
 0e31d53642b756e32562f8e0cb245ef2 *demo/dune_cca0.R
@@ -60,7 +60,7 @@ f5c293465475d4ccf38dfaeaf26d4322 *demo/dune_plot_dcCA.R
 6d31ce87b5bd18d3f569ba23b5976e4d *demo/plot_CWM_SNC.R
 ef5220057c32540a53ab1bc97e794154 *inst/doc/douconca.R
 856d3ddc176162fe285cd2d80edd15d2 *inst/doc/douconca.Rmd
-3da9f48da65329fd4061b0e1eedec636 *inst/doc/douconca.html
+e996fd404c9d0225e85232e419485309 *inst/doc/douconca.html
 be459c3ff7ca74a41ccb46ee2423f75f *inst/tinytest/anova_byaxis_cca0
 b2d836de18e95e09d87c5601c337a5b7 *inst/tinytest/anova_byaxis_wrda
 3302121ffeb277970c430ceba644c596 *inst/tinytest/anova_cca0
@@ -114,7 +114,7 @@ f7d86a0303e9ce89905226c1a40a81f9 *inst/tinytest/scores_mod_DivTc_abs
 e42639a03796f413b677c51052466eff *inst/tinytest/test_FS_divTtraits.R
 bb076e09855c26edaefbe79c9f67ac8f *inst/tinytest/test_anova.dcca.R
 0c4e11ec1f88e9705457d6b3b89b8956 *inst/tinytest/test_anova.dccav.R
-282309fa5a79efcbcb2f3a22253d1d9e *inst/tinytest/test_cca0.R
+fe576be03335c3cdf46fff5a2b4b5c7d *inst/tinytest/test_cca0.R
 913e44e4168e1eb109b9091e6760a007 *inst/tinytest/test_dcca.R
 1fcf86647b3f5beeb479e4247748a69d *inst/tinytest/test_dccav.R
 d1213bbab2b93d8f29cb15ebba49af6d *inst/tinytest/test_fCWMSNC.R
@@ -123,7 +123,7 @@ d1ce79954ecdd85f16496bb7f5875584 *inst/tinytest/test_ipf2N2.R
 2063a21f8406b482f0a19cf3be999466 *inst/tinytest/test_plot.dcca.R
 c4a57f0b487932f80093fd44d943d8f7 *inst/tinytest/test_predict.dcca.R
 fa9991dbd8b11aaff5b7b408710381bb *inst/tinytest/test_predict.dccav.R
-ce7d0bc885b80d5023cfdb58acc42672 *inst/tinytest/test_wrda.R
+f04795a98b3006370fc9fa66f061ef8d *inst/tinytest/test_wrda.R
 91da23402c548d3be7535db1eca15da2 *man/FS.Rd
 a1c930ef7c244c0644aa0c84401903fb *man/FS.dcca.Rd
 82b83ae956d7bcb432f3fd2d7f3d0315 *man/FS.wrda.Rd
@@ -135,7 +135,7 @@ a28988d70717f134fc77c6ef5d7adf71 *man/anova_species.Rd
 14f282ce2cc3261893b73e91941f3f00 *man/cca0.Rd
 15195a52a1b035120c48338c61eaf368 *man/coef.dcca.Rd
 20b4efc424eb076846ae3f8447917797 *man/dc_CA.Rd
-cb9a1b655cc2fd97685d843b5dcfc96c *man/douconca-package.Rd
+6492a3a978e7a9307272ba3ca1da1477 *man/douconca-package.Rd
 2db1623fed49b09590cdb2d28004a1b7 *man/dune_trait_env.Rd
 ae9a0b8614c753b80aff3261c7e2a7db *man/fCWM_SNC.Rd
 c793b6fa2bff6df2e7b88ab16463915e *man/fN2.Rd
@@ -149,7 +149,7 @@ a05508efd59543d1ce05d9f0fbce1902 *man/predict.dcca.Rd
 0fdcba85dd564fc16a7cbc6ee71659c7 *man/predict.wrda.Rd
 20979df322dcbcf775bdbcf4f75666e8 *man/print.dcca.Rd
 9939c67f4a9cf001a8ffe29e2263b2da *man/print.wrda.Rd
-2eb2e5248c028d639fcd1e9cb0f88aa5 *man/reexports.Rd
+4ec4b52e4dc8450750d406be6f2c96de *man/reexports.Rd
 dfe78c44bde8188b7a92f29f74c4d797 *man/scores.dcca.Rd
 fdf25754729618f3621fe1099369304f *man/scores.wrda.Rd
 2d388606aebb45c6d2154b021139ab8e *man/wrda.Rd

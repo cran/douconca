@@ -14,7 +14,6 @@ mod_cca0 <- cca0(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
                  response = Y, 
                  data = dune_trait_env$envir)
 
-
 # compare with vegan::cca
 mod_vegan <- vegan::cca(formula = Y ~ A1 + Moist + Mag + Use + Condition(Manure), 
                         data = dune_trait_env$envir)
@@ -36,12 +35,14 @@ expect_equal(names(cca0_print),
 
 
 set.seed(129)
+
 anova_cca0 <- anova(mod_cca0)
 anova_byaxis_cca0 <- anova(mod_cca0, by = "axis")
-expect_equal_to_reference(anova_cca0, "anova_cca0")
-expect_equal_to_reference(anova_byaxis_cca0, "anova_byaxis_cca0")
 
-expect_equivalent(anova_cca0$eigenvalues,mod_cca0$eigenvalues)
+expect_equivalent_to_reference(anova_cca0, "anova_cca0")
+expect_equivalent_to_reference(anova_byaxis_cca0, "anova_byaxis_cca0")
+
+expect_equivalent(anova_cca0$eigenvalues, mod_cca0$eigenvalues)
 
 mod_cca1 <- cca0(formula = ~ A1 + Moist + Mag + Use + Condition(Manure),
                  response = response,  data = dune_trait_env$envir, 
