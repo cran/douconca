@@ -1,6 +1,11 @@
 # test anova.dcca, anova_species, anova_sites
 data("dune_trait_env")
 
+# The stored anova objects include permute's control object as an attribute.
+# Test references generated with the expanded control layout only when that
+# layout is available; the remaining assertions still run with older permute.
+testPermuteDifferences <- utils::packageVersion("permute") > "0.9-10"
+
 # rownames are carried forward in results
 rownames(dune_trait_env$comm) <- dune_trait_env$comm$Sites
 # use vegan::rda in step 2
@@ -23,7 +28,9 @@ modDivT1a <- dc_CA(formulaEnv = ~A1 + Moist + Mag + Use + Manure,
 
 set.seed(123)
 modDivT1a_an <- anova(modDivT1a)
-expect_equal_to_reference(modDivT1a_an, "modDivT1a_an")
+if (testPermuteDifferences) {
+  expect_equal_to_reference(modDivT1a_an, "modDivT1a_an")
+}
 
 set.seed(123)
 expect_equivalent(anova_species(modDivT1a)$table, modDivT1a_an$species)
@@ -42,7 +49,9 @@ modDivTq11<- dc_CA(formulaEnv = ~ Manure,
 
 set.seed(123)
 modDivTq11_an <- anova(modDivTq11)
-expect_equal_to_reference(modDivTq11_an, "modDivTq11_an")
+if (testPermuteDifferences) {
+  expect_equal_to_reference(modDivTq11_an, "modDivTq11_an")
+}
 
 set.seed(123)
 # test of the by axis of 1 single predictor. 
@@ -91,7 +100,9 @@ modDivT_dcca_near_singular_species <-
 
 set.seed(37)
 anova_dccaDivT <- anova(modDivT_dccaA11)
-expect_equal_to_reference(anova_dccaDivT, "anova_dccaDivT")
+if (testPermuteDifferences) {
+  expect_equal_to_reference(anova_dccaDivT, "anova_dccaDivT")
+}
 
 set.seed(159)
 an_env <- anova_sites(modDivT_dcca_near_singular_species)

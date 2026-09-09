@@ -1,3 +1,7 @@
+# douconca 1.2.6
+
+* No user visible changes.
+
 # douconca 1.2.5.1
 
 * No user visible changes.

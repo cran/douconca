@@ -1,6 +1,6 @@
-a256492212e729dc11c72df4c0c2d13a *DESCRIPTION
+d9d8083d25dc9f45b92e317002b926ca *DESCRIPTION
 259059a62c510db82a3fd46f411f0928 *NAMESPACE
-82247d087d9e485f6dc7430afca024a9 *NEWS.md
+7515926ce275d1852da677f1f26c4486 *NEWS.md
 d7e0b671bdd6b4277eb49c227e893084 *R/FS.dcca.R
 318bdea3e6b565f4b85a94f01fa3b722 *R/FS.wrda.R
 f7a97ddf0faa92fb2338e492191271e0 *R/Rank_mod.R
@@ -60,7 +60,7 @@ f5c293465475d4ccf38dfaeaf26d4322 *demo/dune_plot_dcCA.R
 6d31ce87b5bd18d3f569ba23b5976e4d *demo/plot_CWM_SNC.R
 ef5220057c32540a53ab1bc97e794154 *inst/doc/douconca.R
 856d3ddc176162fe285cd2d80edd15d2 *inst/doc/douconca.Rmd
-e996fd404c9d0225e85232e419485309 *inst/doc/douconca.html
+2068fd111f505a09bd9ecaf43c09e806 *inst/doc/douconca.html
 be459c3ff7ca74a41ccb46ee2423f75f *inst/tinytest/anova_byaxis_cca0
 b2d836de18e95e09d87c5601c337a5b7 *inst/tinytest/anova_byaxis_wrda
 3302121ffeb277970c430ceba644c596 *inst/tinytest/anova_cca0
@@ -112,8 +112,8 @@ f7d86a0303e9ce89905226c1a40a81f9 *inst/tinytest/scores_mod_DivTc_abs
 38cd55e7a16646b742b3e0f2a8ad8847 *inst/tinytest/test_FS_divFtraits.R
 3e013bcfab4820319e680831f959c43b *inst/tinytest/test_FS_divTenv_f2cFALSE.R
 e42639a03796f413b677c51052466eff *inst/tinytest/test_FS_divTtraits.R
-bb076e09855c26edaefbe79c9f67ac8f *inst/tinytest/test_anova.dcca.R
-0c4e11ec1f88e9705457d6b3b89b8956 *inst/tinytest/test_anova.dccav.R
+e5c8e85273357f4ec718987b7eda8988 *inst/tinytest/test_anova.dcca.R
+f980b7fe002d9843c068b1f142e6127a *inst/tinytest/test_anova.dccav.R
 fe576be03335c3cdf46fff5a2b4b5c7d *inst/tinytest/test_cca0.R
 913e44e4168e1eb109b9091e6760a007 *inst/tinytest/test_dcca.R
 1fcf86647b3f5beeb479e4247748a69d *inst/tinytest/test_dccav.R
