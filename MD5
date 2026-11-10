@@ -1,6 +1,6 @@
-d9d8083d25dc9f45b92e317002b926ca *DESCRIPTION
+284e3666e8751010d82e55d185e0f864 *DESCRIPTION
 259059a62c510db82a3fd46f411f0928 *NAMESPACE
-7515926ce275d1852da677f1f26c4486 *NEWS.md
+3f3ed5abc588f416b5ab5717fa7f4a94 *NEWS.md
 d7e0b671bdd6b4277eb49c227e893084 *R/FS.dcca.R
 318bdea3e6b565f4b85a94f01fa3b722 *R/FS.wrda.R
 f7a97ddf0faa92fb2338e492191271e0 *R/Rank_mod.R
@@ -22,7 +22,7 @@ f851b36204a9ac89c53a5155c7cbb68f *R/f_trait_axes.R
 f28c4141845b5769710b66aa1114722b *R/functions_using_cca_object_internals.R
 160cc3b4f57255a624bfc348dfc59d28 *R/getPlotdata.R
 839e0fe17f1492a70876b2c8be19284b *R/get_Z_X_XZ_formula.R
-c2b9cb423a6afdd4b58ff2f41744df52 *R/ipfN2marginals.R
+7e6ed5e40be7fe90cdf22108e45df66f *R/ipfN2marginals.R
 5061be63631403671948362f4e894aaa *R/plot.dcCA.R
 fb6f41098e5756cf7f82556daaf756bb *R/plot_dcCA_CWM_SNC.R
 4815515d71de32d84df8096c0dba904b *R/plot_species_scores_bk.R
@@ -39,8 +39,8 @@ ec37808ce65e5644d09257f972d91caf *R/scores.wrda.R
 cff4d1bea4547bf592ff35dcf4239799 *R/utils.R
 480c65ff2b3f29ec637729c8b452f507 *R/wrda.R
 f8416e3c79517db900e257b32ef3ecf4 *README.md
-6af8e7644a2c366a25339b1923c9a048 *build/partial.rdb
-da32ca40e73f00083ec2e3d2844f173e *build/vignette.rds
+14d179053a0c6b1b9097c5644394d35c *build/partial.rdb
+913aaa5d416b6dded420d0ead5496a27 *build/vignette.rds
 a2a688c6ba285dda64432a66294b766b *data/dune_trait_env.rda
 9b5d0ef076670bd6bece1e49b38ed834 *demo/00Index
 0e31d53642b756e32562f8e0cb245ef2 *demo/dune_cca0.R
@@ -60,7 +60,7 @@ f5c293465475d4ccf38dfaeaf26d4322 *demo/dune_plot_dcCA.R
 6d31ce87b5bd18d3f569ba23b5976e4d *demo/plot_CWM_SNC.R
 ef5220057c32540a53ab1bc97e794154 *inst/doc/douconca.R
 856d3ddc176162fe285cd2d80edd15d2 *inst/doc/douconca.Rmd
-2068fd111f505a09bd9ecaf43c09e806 *inst/doc/douconca.html
+26d47b17b8a160a92f53c7d5efb59739 *inst/doc/douconca.html
 be459c3ff7ca74a41ccb46ee2423f75f *inst/tinytest/anova_byaxis_cca0
 b2d836de18e95e09d87c5601c337a5b7 *inst/tinytest/anova_byaxis_wrda
 3302121ffeb277970c430ceba644c596 *inst/tinytest/anova_cca0
@@ -112,8 +112,8 @@ f7d86a0303e9ce89905226c1a40a81f9 *inst/tinytest/scores_mod_DivTc_abs
 38cd55e7a16646b742b3e0f2a8ad8847 *inst/tinytest/test_FS_divFtraits.R
 3e013bcfab4820319e680831f959c43b *inst/tinytest/test_FS_divTenv_f2cFALSE.R
 e42639a03796f413b677c51052466eff *inst/tinytest/test_FS_divTtraits.R
-e5c8e85273357f4ec718987b7eda8988 *inst/tinytest/test_anova.dcca.R
-f980b7fe002d9843c068b1f142e6127a *inst/tinytest/test_anova.dccav.R
+ed4d6db42fa14d4f3cfa39ca3a4ff12e *inst/tinytest/test_anova.dcca.R
+3781a1be3fa00397fc61c7e1776086e7 *inst/tinytest/test_anova.dccav.R
 fe576be03335c3cdf46fff5a2b4b5c7d *inst/tinytest/test_cca0.R
 913e44e4168e1eb109b9091e6760a007 *inst/tinytest/test_dcca.R
 1fcf86647b3f5beeb479e4247748a69d *inst/tinytest/test_dccav.R
@@ -141,7 +141,7 @@ ae9a0b8614c753b80aff3261c7e2a7db *man/fCWM_SNC.Rd
 c793b6fa2bff6df2e7b88ab16463915e *man/fN2.Rd
 ed635d04a1f7b82e4e96c12f093f3d04 *man/fitted.dcca.Rd
 2f5e850c400ee32c0b21021436ac22a2 *man/getPlotdata.Rd
-f0f60df48340ffe080d00417cc8c9d8e *man/ipf2N2.Rd
+65658189d655d3965062f301072046fb *man/ipf2N2.Rd
 e6050c898fde06fac4f0f64fc3efc685 *man/plot.dcca.Rd
 c92b7da88166b28d9b7bf3f29290597c *man/plot_dcCA_CWM_SNC.Rd
 57401ac9e955f240a37be420651fced5 *man/plot_species_scores_bk.Rd

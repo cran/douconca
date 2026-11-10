@@ -177,4 +177,9 @@ Fourth-corner latent variable models overstate confidence in
 trait–environment relationships and what to use instead
 Environmental and Ecological Statistics.
 \doi{10.1007/s10651-025-00696-0}
+
+ter Braak, C.J.F. (2026).
+Stronger Evidence for Trait–Environment Association 
+by Pre-processing of Abundance Tables. Preprint.
+\doi{10.32942/X2TT0B}
 }
